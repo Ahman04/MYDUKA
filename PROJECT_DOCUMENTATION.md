@@ -1,4 +1,4 @@
-# 📦 MyDuka – Inventory & Reporting System
+# MyDuka – Inventory & Reporting System
 ## Project Documentation
 
 ### 1. Project Overview
@@ -21,7 +21,7 @@ MyDuka provides:
 - Visual analytics using charts and graphs
 
 ### 4. User Roles & Permissions
-#### 👑 Merchant (Superuser)
+#### Merchant (Superuser)
 - Initialize admin registration via tokenized email links
 - Activate, deactivate, or delete admin accounts
 - View:
@@ -30,7 +30,7 @@ MyDuka provides:
   - Individual product performance
   - Visualized reports using graphs
 
-#### 🧑‍💼 Store Admin
+#### Store Admin
 - Register and manage data entry clerks
 - Approve or decline supply requests
 - Update payment status (paid / unpaid)
@@ -39,7 +39,7 @@ MyDuka provides:
   - Paid vs unpaid supplier products
 - Deactivate or delete clerks
 
-#### 🧾 Data Entry Clerk
+#### Data Entry Clerk
 - Record:
   - Items received
   - Items in stock
@@ -60,7 +60,7 @@ MyDuka provides:
 - CI/CD with GitHub Actions
 - Automated testing (frontend & backend)
 
-## ⚙️ Recommended Technology Stack (Chosen for You)
+## Recommended Technology Stack (Chosen for You)
 ### Backend (API)
 | Purpose | Technology |
 | --- | --- |
@@ -108,7 +108,7 @@ MyDuka provides:
   - Frontend → Vercel
   - Backend → Render / Railway
 
-## 🗂️ Project Repository Structure (Single Repo – Required)
+## Project Repository Structure (Single Repo – Required)
 ```
 myduka/
 │
@@ -196,7 +196,7 @@ myduka/
 └── PROJECT_TRACKER.md
 ```
 
-## 🧪 Testing Strategy
+## Testing Strategy
 ### Backend
 - Unit tests for auth, inventory, reports
 - Pagination tests on listing endpoints
@@ -206,7 +206,7 @@ myduka/
 - Auth flow tests
 - Dashboard data rendering tests
 
-## 📊 Reporting & Visualization
+## Reporting & Visualization
 - Line graphs → stock movement over time
 - Bar graphs → product performance
 - Filters:
@@ -215,14 +215,14 @@ myduka/
   - Date range
 - Pie charts (optional)
 
-# 📁 MyDuka Project – File & Folder Explanation
+# MyDuka Project – File & Folder Explanation
 
 ## Root Level
 - **myduka/** – Main project folder containing both frontend and backend.
 - **README.md** – Overall project overview, setup instructions, and features.
 - **PROJECT_TRACKER.md** – Tracks tasks, progress, and team responsibilities.
 
-## 🔙 Backend (backend/)
+## Backend (backend/)
 - **backend/** – Backend API built using FastAPI.
 
 ### Backend Core
@@ -266,7 +266,7 @@ myduka/
 - **requirements.txt** – Lists backend dependencies.
 - **README.md** – Backend setup and API documentation.
 
-## 🎨 Frontend (frontend/)
+## Frontend (frontend/)
 - **frontend/** – Frontend React application for user interaction.
 
 ### State Management
@@ -301,5 +301,5 @@ myduka/
 - **package.json** – Frontend dependencies and scripts.
 - **README.md** – Frontend setup and usage guide.
 
-## ⚙️ CI/CD
+## CI/CD
 - **.github/workflows/ci.yml** – GitHub Actions workflow for testing and deployment.
