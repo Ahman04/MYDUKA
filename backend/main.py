@@ -7,7 +7,7 @@ async def root():
     return{
         "message": "Welcome to MyDuka API",
         "docs":"/docs",
-        "health":"/health_check"
+        "health":"/health_check",
         "I am in my branch": "Branch"
     }
 
