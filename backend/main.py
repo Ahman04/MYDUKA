@@ -8,6 +8,7 @@ async def root():
         "message": "Welcome to MyDuka API",
         "docs":"/docs",
         "health":"/health_check"
+        "I am in my branch": "Branch"
     }
 
 @app.get("/health_check")
