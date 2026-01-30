@@ -25,3 +25,50 @@ Poor business decisions
 Stock losses
 
 Delayed procurement and payments
+
+SOLUTION
+
+MyDuka addresses these challenges by offering:
+
+Centralized inventory management
+
+Role-based dashboards
+
+Automated reports (weekly, monthly, yearly)
+
+Supplier payment tracking
+
+Visual analytics using charts and graphs
+
+ User Roles & Permissions
+ Merchant (Superuser)
+
+Initialize admin registration via tokenized email links
+
+Activate, deactivate, or delete admin accounts
+
+View:
+
+Store-by-store performance reports
+
+Paid vs unpaid products per store
+
+Individual product performance
+
+Graphical analytics dashboards
+
+ Store Admin
+
+Register and manage data entry clerks
+
+Approve or decline supply requests
+
+Update supplier payment status
+
+View:
+
+Clerk performance reports
+
+Paid vs unpaid supplier products
+
+Deactivate or delete clerks
