@@ -72,3 +72,103 @@ Clerk performance reports
 Paid vs unpaid supplier products
 
 Deactivate or delete clerks
+
+  Data Entry Clerk
+
+Record:
+
+Items received
+
+Items in stock
+
+Spoilt items (expired or damaged)
+
+Buying and selling prices
+
+Payment status
+
+Request additional stock supply from store admin
+
+ Core Features
+
+JWT authentication (Access & Refresh tokens)
+
+Role-based access control (RBAC)
+
+Token-based email registration
+
+Inventory CRUD operations
+
+Supply request workflow
+
+Supplier payment tracking
+
+Graphical reports (bar, line, and optional pie charts)
+
+Pagination on all listing endpoints
+
+CI/CD pipeline with GitHub Actions
+
+Automated frontend and backend testing
+
+  Technology Stack
+Backend (API)
+Purpose	Technology
+Framework	FastAPI
+Language	Python
+Authentication	JWT
+Database	PostgreSQL
+ORM	SQLAlchemy
+Migrations	Alembic
+Email Service	SMTP / SendGrid
+Testing	Pytest
+API Docs	Swagger (Auto-generated)
+
+Why FastAPI?
+
+High performance
+
+Automatic API documentation
+
+Async support
+
+Production-ready architecture
+
+Frontend
+Purpose	Technology
+Framework	React (Vite)
+State Management	Redux Toolkit
+Routing	React Router
+Styling	Tailwind CSS
+Charts	Recharts
+Forms	React Hook Form
+API Handling	Axios with JWT Interceptors
+Testing	Jest & React Testing Library
+
+Why Redux Toolkit?
+
+Cleaner and scalable state management
+
+Excellent debugging tools
+
+Suitable for complex dashboards
+
+DevOps & Workflow
+
+Gitflow branching strategy
+
+GitHub Actions for CI/CD
+
+Automated:
+
+Tests
+
+Linting
+
+Build checks
+
+Deployment:
+
+Frontend → Vercel
+
+Backend → Render / Railway
