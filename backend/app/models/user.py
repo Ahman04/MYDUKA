@@ -17,16 +17,16 @@ class User(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=True)  # null until invited user sets password
     full_name = Column(String(255), nullable=True)
-    role = Column(String(50), nullable=False)  # merchant | admin | clerk
+    role = Column(String(50), nullable=False)  # merchant,admin,clerk
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    # # Admin/Clerk: who they belong to
-    # merchant_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    # store_id = Column(Integer, ForeignKey("stores.id"), nullable=True)
+    # Admin/Clerk: who they belong to
+    merchant_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    store_id = Column(Integer, ForeignKey("stores.id"), nullable=True)
 
-    # # Self-referential: merchant's admins
-    # merchant = relationship("User", remote_side=[id], backref="admins")
-    # # Clerks/admins linked to a store (string "Store" avoids circular import)
-    # store = relationship("Store", backref="clerks", foreign_keys=[store_id])
+    # Self-referential: merchant's admins
+    merchant = relationship("User", remote_side=[id], backref="admins")
+    # Clerks/admins linked to a store (string "Store" avoids circular import)
+    store = relationship("Store", backref="clerks", foreign_keys=[store_id])
