@@ -3,3 +3,25 @@
 MyDuka is a web-based inventory management and reporting system designed to help merchants and store administrators efficiently manage stock, track procurement payments, and generate actionable business insights through real-time reports and visual analytics.
 
 The system is built for small to medium-sized businesses seeking a reliable, digital alternative to manual record keeping.
+
+PROJECT OVERVIEW
+
+Manual inventory management is still widely used by many businesses, leading to inefficiencies and costly errors. MyDuka digitizes inventory workflows, enforces accountability through role-based access, and provides clear insights to support informed decision-making.
+
+ PROBLEM STATEMENT
+
+Many businesses rely on manual record keeping, which is:
+
+Time-consuming
+
+Error-prone
+
+Lacking real-time reporting
+
+These challenges often result in:
+
+Poor business decisions
+
+Stock losses
+
+Delayed procurement and payments
