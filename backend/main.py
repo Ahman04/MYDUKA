@@ -1,11 +1,12 @@
 from fastapi import FastAPI 
 from app.core.database import engine, Base
 from app.models import user
+import json
 
 
 app = FastAPI(title="MyDuka API")
 
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 def root():

@@ -1,7 +1,8 @@
 #  I am using pydantic_settings to load the settings from the environment variables
 
 from pydantic_settings import BaseSettings
-from typing import Optional
+from typing import Optional, List
+
 
 
 class Settings(BaseSettings):
@@ -30,7 +31,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     
     # CORS Settings
-    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:5173"]
+    CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173"]
     
     class Config:
         env_file = ".env"

@@ -1,12 +1,12 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
+import json
 
-
-DATABASE_URL = "sqlite:///./myduka.db"
+from app.core.config import settings
 
 engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False}
+    settings.DATABASE_URL,
+    connect_args={"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {}
 )
 
 SessionLocal = sessionmaker(

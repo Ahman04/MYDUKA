@@ -4,7 +4,7 @@ from typing import Optional, Dict, Any
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import HTTPException, status
-
+import json
 from app.core.config import settings
 
 # Password hashing context
