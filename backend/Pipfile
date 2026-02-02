@@ -17,6 +17,7 @@ pydantic-settings = "==2.1.0"
 email-validator = "==2.1.0"
 flask = "*"
 flask-sqlalchemy = "*"
+flask-migrate = "*"
 
 [dev-packages]
 
