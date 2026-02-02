@@ -47,3 +47,41 @@ Initialize admin registration via tokenized email links
 
 Activate, deactivate, or delete admin accounts
 
+    View:
+
+Store-by-store performance reports
+
+Paid vs unpaid products per store
+
+Individual product performance
+
+Graphical analytics dashboards
+
+ Store Admin
+
+Register and manage data entry clerks
+
+Approve or decline supply requests
+
+Update supplier payment status
+
+View:
+
+Clerk performance reports
+
+Paid vs unpaid supplier products
+
+Deactivate or delete clerks
+
+  Data Entry Clerk
+
+Record:
+
+Items received
+
+Items in stock
+
+Spoilt items (expired or damaged)
+
+Buying and selling prices
+
