@@ -146,4 +146,29 @@ API Handling	Axios with JWT Interceptors
 Testing	Jest & React Testing Library
 
 Why Redux Toolkit?
+ Cleaner and scalable state management
+
+Excellent debugging tools
+
+Suitable for complex dashboards
+
+DevOps & Workflow
+
+Gitflow branching strategy
+
+GitHub Actions for CI/CD
+
+Automated:
+
+Tests
+
+Linting
+
+Build checks
+
+Deployment:
+
+Frontend → Vercel
+
+Backend → Render / Railway
 
