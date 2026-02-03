@@ -7,6 +7,10 @@ import {
   Store,
   Users,
 } from "lucide-react";
+import StatCard from "../components/StatCard.jsx";
+import Section from "../components/Section.jsx";
+import Table from "../components/Table.jsx";
+import StatusBadge from "../components/StatusBadge.jsx";
 
 export default function AdminPanel() {
   const [supplyRequests] = useState([
@@ -249,88 +253,5 @@ export default function AdminPanel() {
         </Section>
       </main>
     </div>
-  );
-}
-
-/* ---------- REUSABLE COMPONENTS ---------- */
-
-function StatCard({ title, value, trend, icon }) {
-  return (
-    <div className="bg-[#1E293B] p-4 rounded-lg border border-[#1E293B] shadow-sm">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-[#E2E8F0]/70">{title}</p>
-        <span className="rounded-full bg-[#1E293B] p-2 text-[#63C2B0]">
-          {icon}
-        </span>
-      </div>
-      <h2 className="mt-2 text-xl font-bold text-[#63C2B0]">{value}</h2>
-      <p className="mt-1 text-xs text-[#E2E8F0]/60">{trend}</p>
-    </div>
-  );
-}
-
-function Section({ title, children, actions, subtitle }) {
-  return (
-    <div className="bg-[#1E293B] rounded-lg shadow mb-8 p-4 border border-[#1E293B]">
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-        <div>
-          <h3 className="font-semibold text-[#E2E8F0]">{title}</h3>
-          {subtitle ? (
-            <p className="text-sm text-[#E2E8F0]/70">{subtitle}</p>
-          ) : null}
-        </div>
-        {actions ? <div>{actions}</div> : null}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function Table({ headers, children, emptyMessage, isEmpty }) {
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="text-left text-[#E2E8F0]/60">
-            {headers.map((h) => (
-              <th key={h} className="pb-2 pr-4">
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {isEmpty ? (
-            <tr>
-              <td className="py-6 text-[#E2E8F0]/70" colSpan={headers.length}>
-                {emptyMessage}
-              </td>
-            </tr>
-          ) : (
-            children
-          )}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function StatusBadge({ status }) {
-  const colors = {
-    Pending: "bg-[#1E293B] text-[#63C2B0]",
-    Approved: "bg-[#1E293B] text-[#63C2B0]",
-    Paid: "bg-[#1E293B] text-[#63C2B0]",
-    Unpaid: "bg-[#1E293B] text-[#63C2B0]",
-    Active: "bg-[#1E293B] text-[#63C2B0]",
-  };
-
-  return (
-    <span
-      className={`px-3 py-1 rounded-full text-xs font-medium ${
-        colors[status]
-      }`}
-    >
-      {status}
-    </span>
   );
 }
