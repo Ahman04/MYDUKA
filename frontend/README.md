@@ -171,4 +171,7 @@ Deployment:
 
 Frontend → Vercel
 
+front end vercel
+gi
+
 <!-- Backend → Render / Railway -->
