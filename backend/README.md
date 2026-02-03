@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12%2B-blue.svg)](https://www.postgresql.org/)
 
-##  Overview
+## Overview
 
 MyDuka is a comprehensive inventory management system designed for multi-store ecommerce operations. The backend provides a robust REST API built with **FastAPI**, featuring role-based access control, JWT authentication, and complete inventory tracking capabilities.
 
@@ -23,9 +23,9 @@ curl http://localhost:8000/health
 
 ---
 
-##  Key Features
+## Key Features
 
-###  Authentication & Authorization
+### Authentication & Authorization
 
 - **JWT Token-Based Authentication** - Secure API access
 - **Role-Based Access Control (RBAC)**:
@@ -33,33 +33,33 @@ curl http://localhost:8000/health
   - `admin`: Store Manager - Store-level management
   - `clerk`: Data Entry - Record inventory entries
 
-###  Inventory Management
+### Inventory Management
 
 - Record received items with prices and payment status
 - Track stock levels and spoilage
 - Support for multiple stores
 - Detailed inventory history
 
-###  Product Management
+### Product Management
 
 - Add and manage products
 - Track buying and selling prices
 - Unique SKU system
 - Product activation/deactivation
 
-###  Store Management
+### Store Management
 
 - Multi-store support
 - Store-specific data tracking
 - Store admin assignment
 
-###  Supply Requests
+### Supply Requests
 
 - Clerks request additional products
 - Admin approval/decline workflow
 - Supply request history and tracking
 
-###  Reporting (Ready for Implementation)
+### Reporting (Ready for Implementation)
 
 - Sales performance by store
 - Payment status tracking (paid/unpaid)
@@ -67,7 +67,7 @@ curl http://localhost:8000/health
 
 ---
 
-##  Project Structure
+## Project Structure
 
 ```
 backend/
@@ -107,7 +107,7 @@ backend/
 
 ---
 
-##  Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -154,7 +154,7 @@ start.bat
 
 ---
 
-##  Configuration
+## Configuration
 
 ### Environment Variables (.env)
 
@@ -184,7 +184,7 @@ DATABASE_URL=sqlite:///./myduka.db
 
 ---
 
-##  API Documentation
+## API Documentation
 
 ### Authentication Endpoints
 
@@ -478,7 +478,7 @@ Content-Type: application/json
 
 ---
 
-##  Authentication & Authorization
+## Authentication & Authorization
 
 ### How It Works
 
@@ -505,7 +505,7 @@ Content-Type: application/json
 
 ---
 
-##  Testing
+## Testing
 
 ### Using Swagger UI (Recommended)
 
@@ -544,7 +544,7 @@ curl -X GET "http://localhost:8000/api/products/" \
 
 ---
 
-##  Troubleshooting
+## Troubleshooting
 
 ### Port Already in Use
 
@@ -595,7 +595,7 @@ touch app/services/__init__.py
 
 ---
 
-##  Performance Tips
+## Performance Tips
 
 1. **Use Connection Pooling** - Already configured in SQLAlchemy
 2. **Enable Caching** - For frequently accessed data
@@ -605,7 +605,7 @@ touch app/services/__init__.py
 
 ---
 
-##  Deployment Checklist
+## Deployment Checklist
 
 - [ ] Change `SECRET_KEY` to random string (32+ chars)
 - [ ] Set `DEBUG=false`
@@ -620,7 +620,7 @@ touch app/services/__init__.py
 
 ---
 
-##  Support
+## Support
 
 For issues or questions:
 
@@ -632,13 +632,13 @@ For issues or questions:
 
 ---
 
-##  License
+## License
 
 This project is for educational purposes. All rights reserved.
 
 ---
 
-##  Team
+## Team
 
 - **Backend Team**: Building FastAPI
 - **Frontend Team**: Building React interface
@@ -646,19 +646,18 @@ This project is for educational purposes. All rights reserved.
 
 ---
 
-##  Implementation Checklist
+## Implementation Checklist
 
--  Authentication & JWT
--  User Management
--  Product Management
--  Inventory Tracking
--  Supply Requests
--  Store Management
--  Email Notifications (Ready to implement)
--  Advanced Reporting (Ready to implement)
--  Data Export (Ready to implement)
+- Authentication & JWT
+- User Management
+- Product Management
+- Inventory Tracking
+- Supply Requests
+- Store Management
+- Email Notifications (Ready to implement)
+- Advanced Reporting (Ready to implement)
+- Data Export (Ready to implement)
 
 ---
 
 **Happy coding!**
-
