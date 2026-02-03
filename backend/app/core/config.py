@@ -8,8 +8,8 @@ from typing import Optional, List
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
     
-    # Database
-    DATABASE_URL: str = "sqlite:///./myduka.db"
+    # Database (PostgreSQL; override via .env)
+    DATABASE_URL: str = "postgresql://myduka:myduka@localhost:5432/myduka"
     
     # JWT Settings
     SECRET_KEY: str = "your-secret-key-change-this-in-production"

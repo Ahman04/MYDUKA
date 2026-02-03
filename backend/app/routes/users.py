@@ -22,13 +22,13 @@ def get_current_user_info(current_user: User = Depends(get_current_user)):
     """Get current authenticated user information"""
     return current_user
 
-# Invite user route
-@router.post("/invite", response_model=dict)
-def invite_user(
-    user_data: UserCreate,
-    current_user: User = Depends(get_current_active_merchant),
-    db: Session = Depends(get_db)
-):
+# # Invite user route
+# @router.post("/invite", response_model=dict)
+# def invite_user(
+#     user_data: UserCreate,
+#     current_user: User = Depends(get_current_active_merchant),
+#     db: Session = Depends(get_db)
+# ):
     """Merchant invites admin or clerk"""
     if user_data.role not in ["admin", "clerk"]:
         raise HTTPException(
@@ -201,3 +201,4 @@ def delete_user(
     db.delete(user)
     db.commit()
     return {"message": "User deleted successfully"}
+
