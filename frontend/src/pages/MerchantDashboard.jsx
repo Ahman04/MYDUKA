@@ -23,7 +23,7 @@ import {
 export default function MerchantDashboard() {
   const stats = [
     {
-      label: "Active tores",
+      label: "Active Stores",
       value: "2",
       trend: "+2 this month",
       icon: <Store className="h-5 w-5" />,
