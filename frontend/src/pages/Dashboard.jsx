@@ -10,24 +10,38 @@ import {
 
 export default function Dashboard() {
   const [activeForm, setActiveForm] = useState("record");
+  const getInventoryStatus = (stock) => {
+    if (stock <= 0) return "Out of Stock";
+    if (stock <= 50) return "Low Stock";
+    return "In Stock";
+  };
+
+  const inventoryStatusStyles = {
+    "In Stock": { backgroundColor: "#1E293B", color: "#63C2B0" },
+    "Low Stock": { backgroundColor: "#1E293B", color: "#63C2B0" },
+    "Out of Stock": { backgroundColor: "#1E293B", color: "#63C2B0" },
+  };
   const stats = [
     {
       label: "Total Products",
       value: "3",
       icon: <Box className="h-5 w-5" />,
-      color: "bg-blue-50 text-blue-600",
+      color: "text-[#63C2B0]",
+      valueColor: "text-[#63C2B0]",
     },
     {
       label: "Total Stock",
       value: "405",
       icon: <TrendingUp className="h-5 w-5" />,
-      color: "bg-emerald-50 text-emerald-600",
+      color: "text-[#63C2B0]",
+      valueColor: "text-[#63C2B0]",
     },
     {
       label: "Spoilt Items",
       value: "5",
       icon: <AlertTriangle className="h-5 w-5" />,
-      color: "bg-rose-50 text-rose-600",
+      color: "text-[#63C2B0]",
+      valueColor: "text-[#63C2B0]",
     },
   ];
 
@@ -62,25 +76,25 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
+    <div className="min-h-screen bg-[#0F172A]">
+      <header className="border-b border-[#1E293B] bg-[#1E293B]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold">
+            <div className="h-9 w-9 rounded-lg bg-[#1E293B] text-[#E2E8F0] flex items-center justify-center font-bold">
               M
             </div>
             <div>
-              <h1 className="text-base font-semibold text-slate-900">MyDuka</h1>
-              <p className="text-xs text-slate-500">
+              <h1 className="text-base font-semibold text-[#E2E8F0]">MyDuka</h1>
+              <p className="text-xs text-[#E2E8F0]/70">
                 Data Entry Clerk · Downtown Store
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-4 text-sm text-slate-600">
+          <div className="flex items-center gap-4 text-sm text-[#E2E8F0]/70">
             <div className="text-right">
               Mike Clerk <span className="block text-xs">Clerk</span>
             </div>
-            <button className="rounded-full border border-slate-200 p-2 text-slate-500 hover:text-slate-700">
+            <button className="rounded-full border border-[#1E293B] p-2 text-[#E2E8F0]/70 hover:text-[#E2E8F0]">
               <LogOut className="h-4 w-4" />
             </button>
           </div>
@@ -92,15 +106,15 @@ export default function Dashboard() {
           {stats.map((stat) => (
             <div
               key={stat.label}
-              className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+              className="rounded-xl border border-[#1E293B] bg-[#1E293B] p-4 shadow-sm"
             >
               <div className="flex items-center justify-between">
-                <p className="text-sm text-slate-500">{stat.label}</p>
-                <span className={`rounded-lg p-2 ${stat.color}`}>
+                <p className="text-sm text-[#E2E8F0]/70">{stat.label}</p>
+                <span className={`rounded-lg bg-[#1E293B] p-2 ${stat.color}`}>
                   {stat.icon}
                 </span>
               </div>
-              <p className="mt-2 text-2xl font-semibold text-slate-900">
+              <p className={`mt-2 text-2xl font-semibold ${stat.valueColor}`}>
                 {stat.value}
               </p>
             </div>
@@ -110,14 +124,14 @@ export default function Dashboard() {
         <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
           <button
             onClick={() => setActiveForm("record")}
-            className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow hover:bg-blue-700"
+            className="flex items-center justify-center gap-2 rounded-xl bg-[#63C2B0] px-4 py-3 text-sm font-semibold text-[#0F172A] shadow hover:opacity-90"
           >
             <PackagePlus className="h-4 w-4" />
             Record New Product
           </button>
           <button
             onClick={() => setActiveForm("request")}
-            className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow hover:bg-emerald-700"
+            className="flex items-center justify-center gap-2 rounded-xl bg-[#63C2B0] px-4 py-3 text-sm font-semibold text-[#0F172A] shadow hover:opacity-90"
           >
             <Send className="h-4 w-4" />
             Request Supply
@@ -125,147 +139,147 @@ export default function Dashboard() {
         </div>
 
         {activeForm === "record" ? (
-          <div className="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-base font-semibold text-slate-900">
+          <div className="mt-6 rounded-xl border border-[#1E293B] bg-[#1E293B] p-6 shadow-sm">
+            <h2 className="text-base font-semibold text-[#E2E8F0]">
               Record New Product
             </h2>
             <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-[#E2E8F0]/70">
                   Product Name
                 </label>
                 <input
                   type="text"
                   placeholder="e.g., Rice - 5kg"
-                  className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                  className="mt-2 w-full rounded-md border border-[#1E293B] bg-[#1E293B] px-3 py-2 text-sm text-[#E2E8F0] placeholder-[#E2E8F0]/50 focus:border-[#63C2B0] focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-[#E2E8F0]/70">
                   Category
                 </label>
                 <input
                   type="text"
                   placeholder="e.g., Grains"
-                  className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                  className="mt-2 w-full rounded-md border border-[#1E293B] bg-[#1E293B] px-3 py-2 text-sm text-[#E2E8F0] placeholder-[#E2E8F0]/50 focus:border-[#63C2B0] focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-[#E2E8F0]/70">
                   Buying Price (KES)
                 </label>
                 <input
                   type="number"
                   placeholder="450"
-                  className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                  className="mt-2 w-full rounded-md border border-[#1E293B] bg-[#1E293B] px-3 py-2 text-sm text-[#E2E8F0] placeholder-[#E2E8F0]/50 focus:border-[#63C2B0] focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-[#E2E8F0]/70">
                   Selling Price (KES)
                 </label>
                 <input
                   type="number"
                   placeholder="600"
-                  className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                  className="mt-2 w-full rounded-md border border-[#1E293B] bg-[#1E293B] px-3 py-2 text-sm text-[#E2E8F0] placeholder-[#E2E8F0]/50 focus:border-[#63C2B0] focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-[#E2E8F0]/70">
                   Current Stock
                 </label>
                 <input
                   type="number"
                   placeholder="120"
-                  className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                  className="mt-2 w-full rounded-md border border-[#1E293B] bg-[#1E293B] px-3 py-2 text-sm text-[#E2E8F0] placeholder-[#E2E8F0]/50 focus:border-[#63C2B0] focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-[#E2E8F0]/70">
                   Spoilt Items
                 </label>
                 <input
                   type="number"
                   placeholder="0"
-                  className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                  className="mt-2 w-full rounded-md border border-[#1E293B] bg-[#1E293B] px-3 py-2 text-sm text-[#E2E8F0] placeholder-[#E2E8F0]/50 focus:border-[#63C2B0] focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-[#E2E8F0]/70">
                   Supplier
                 </label>
                 <input
                   type="text"
                   placeholder="Kenya Grains Ltd"
-                  className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                  className="mt-2 w-full rounded-md border border-[#1E293B] bg-[#1E293B] px-3 py-2 text-sm text-[#E2E8F0] placeholder-[#E2E8F0]/50 focus:border-[#63C2B0] focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-[#E2E8F0]/70">
                   Payment Status
                 </label>
-                <select className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm">
+                <select className="mt-2 w-full rounded-md border border-[#1E293B] bg-[#1E293B] px-3 py-2 text-sm text-[#E2E8F0] focus:border-[#63C2B0] focus:outline-none">
                   <option>Paid</option>
                   <option>Unpaid</option>
                 </select>
               </div>
             </div>
             <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
-              <button className="rounded-lg bg-blue-600 py-2 text-sm font-semibold text-white">
+              <button className="rounded-lg bg-[#63C2B0] py-2 text-sm font-semibold text-[#0F172A] hover:opacity-90">
                 Record Product
               </button>
               <button
                 onClick={() => setActiveForm("request")}
-                className="rounded-lg bg-slate-200 py-2 text-sm font-semibold text-slate-700"
+                className="rounded-lg bg-[#1E293B] py-2 text-sm font-semibold text-[#E2E8F0] hover:opacity-90"
               >
                 Cancel
               </button>
             </div>
           </div>
         ) : (
-          <div className="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-base font-semibold text-slate-900">
+          <div className="mt-6 rounded-xl border border-[#1E293B] bg-[#1E293B] p-6 shadow-sm">
+            <h2 className="text-base font-semibold text-[#E2E8F0]">
               Request Supply
             </h2>
             <div className="mt-4 space-y-4">
               <div>
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-[#E2E8F0]/70">
                   Product Name
                 </label>
                 <input
                   type="text"
                   placeholder="e.g., Rice - 5kg"
-                  className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                  className="mt-2 w-full rounded-md border border-[#1E293B] bg-[#1E293B] px-3 py-2 text-sm text-[#E2E8F0] placeholder-[#E2E8F0]/50 focus:border-[#63C2B0] focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-[#E2E8F0]/70">
                   Quantity Needed
                 </label>
                 <input
                   type="number"
                   placeholder="50"
-                  className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                  className="mt-2 w-full rounded-md border border-[#1E293B] bg-[#1E293B] px-3 py-2 text-sm text-[#E2E8F0] placeholder-[#E2E8F0]/50 focus:border-[#63C2B0] focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-[#E2E8F0]/70">
                   Notes
                 </label>
                 <textarea
                   rows={4}
                   placeholder="Reason for request..."
-                  className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                  className="mt-2 w-full rounded-md border border-[#1E293B] bg-[#1E293B] px-3 py-2 text-sm text-[#E2E8F0] placeholder-[#E2E8F0]/50 focus:border-[#63C2B0] focus:outline-none"
                 />
               </div>
             </div>
             <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
-              <button className="rounded-lg bg-emerald-600 py-2 text-sm font-semibold text-white">
+              <button className="rounded-lg bg-[#63C2B0] py-2 text-sm font-semibold text-[#0F172A] hover:opacity-90">
                 Send Request
               </button>
               <button
                 onClick={() => setActiveForm("record")}
-                className="rounded-lg bg-slate-200 py-2 text-sm font-semibold text-slate-700"
+                className="rounded-lg bg-[#1E293B] py-2 text-sm font-semibold text-[#E2E8F0] hover:opacity-90"
               >
                 Cancel
               </button>
@@ -273,19 +287,20 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div className="mt-8 rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-6 py-4">
-            <h2 className="text-base font-semibold text-slate-900">
+        <div className="mt-8 rounded-xl border border-[#1E293B] bg-[#1E293B] shadow-sm">
+          <div className="border-b border-[#1E293B] px-6 py-4">
+            <h2 className="text-base font-semibold text-[#E2E8F0]">
               My Recorded Products
             </h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs uppercase text-slate-400">
+                <tr className="text-left text-xs uppercase text-[#E2E8F0]/60">
                   <th className="px-6 py-3">Product</th>
                   <th className="px-6 py-3">Category</th>
                   <th className="px-6 py-3">Stock</th>
+                  <th className="px-6 py-3">Status</th>
                   <th className="px-6 py-3">Spoilt</th>
                   <th className="px-6 py-3">Buy Price</th>
                   <th className="px-6 py-3">Sell Price</th>
@@ -294,23 +309,31 @@ export default function Dashboard() {
               </thead>
               <tbody>
                 {products.map((item) => (
-                  <tr key={item.product} className="border-t">
-                    <td className="px-6 py-4 font-medium text-slate-900">
+                  <tr key={item.product} className="border-t border-[#1E293B]">
+                    <td className="px-6 py-4 font-medium text-[#E2E8F0]">
                       {item.product}
                     </td>
-                    <td className="px-6 py-4 text-slate-500">
+                    <td className="px-6 py-4 text-[#E2E8F0]/70">
                       {item.category}
                     </td>
-                    <td className="px-6 py-4">{item.stock}</td>
-                    <td className="px-6 py-4">{item.spoil}</td>
-                    <td className="px-6 py-4">{item.buyPrice}</td>
-                    <td className="px-6 py-4">{item.sellPrice}</td>
+                    <td className="px-6 py-4 text-[#E2E8F0]">{item.stock}</td>
                     <td className="px-6 py-4">
+                      <span
+                        className="rounded-full px-3 py-1 text-xs font-medium"
+                        style={inventoryStatusStyles[getInventoryStatus(item.stock)]}
+                      >
+                        {getInventoryStatus(item.stock)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-[#E2E8F0]">{item.spoil}</td>
+                    <td className="px-6 py-4 text-[#E2E8F0]">{item.buyPrice}</td>
+                    <td className="px-6 py-4 text-[#E2E8F0]">{item.sellPrice}</td>
+                    <td className="px-6 py-4 text-[#E2E8F0]">
                       <span
                         className={`rounded-full px-3 py-1 text-xs font-medium ${
                           item.payment === "Paid"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-rose-100 text-rose-700"
+                            ? "bg-[#1E293B] text-[#63C2B0]"
+                            : "bg-[#1E293B] text-[#63C2B0]"
                         }`}
                       >
                         {item.payment}
