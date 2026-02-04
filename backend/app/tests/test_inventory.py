@@ -62,7 +62,7 @@ async def test_clerk_can_record_inventory(client, db, user_factory, auth_headers
         },
     )
 
-    assert response.status_code == 200, response.text
+    assert response.status_code == 201, response.text
     assert response.json()["product_id"] == product.id
 
 
@@ -112,3 +112,30 @@ async def test_clerk_inventory_list_shows_only_own_records(
     items = response.json()
     assert len(items) == 1
     assert items[0]["product_id"] == product_a.id
+
+
+async def test_clerk_can_delete_own_inventory_record(client, db, user_factory, auth_headers):
+    clerk = user_factory(email="delete@myduka.com", role="clerk", password="clerk123")
+    product, store = _seed_product_store(db, "DEL")
+    record = Inventory(
+        product_id=product.id,
+        store_id=store.id,
+        created_by=clerk.id,
+        quantity_received=9,
+        quantity_in_stock=9,
+        quantity_spoilt=0,
+        payment_status="paid",
+        buying_price=100,
+        selling_price=150,
+    )
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+
+    response = await client.delete(
+        f"/api/inventory/{record.id}",
+        headers=auth_headers(clerk),
+    )
+
+    assert response.status_code == 200
+    assert response.json()["message"] == "Inventory record deleted successfully"

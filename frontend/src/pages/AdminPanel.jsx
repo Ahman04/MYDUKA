@@ -1,3 +1,7 @@
+/**
+ * Store admin dashboard page.
+ * Manages clerks, supply request decisions, and supplier payment updates.
+ */
 import { useEffect, useMemo, useState } from "react";
 import {
   Bell,
@@ -6,10 +10,18 @@ import {
   Loader2,
   LogOut,
   Store,
+  UserPlus,
   Users,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { clearAuthSession, getStoredUser, reportApi } from "../services/api";
+import {
+  getStoredUser,
+  inventoryApi,
+  logoutSession,
+  reportApi,
+  supplyRequestsApi,
+  usersApi,
+} from "../services/api";
 
 const EMPTY_DASHBOARD = {
   stats: {
@@ -21,7 +33,10 @@ const EMPTY_DASHBOARD = {
   supply_requests: [],
   payment_status: [],
   clerks: [],
+  clerk_performance: [],
 };
+
+const PAGE_SIZE = 6;
 
 const formatCurrency = (amount) =>
   new Intl.NumberFormat("en-KE", {
@@ -42,35 +57,177 @@ export default function AdminPanel() {
   const currentUser = useMemo(() => getStoredUser(), []);
   const [dashboard, setDashboard] = useState(EMPTY_DASHBOARD);
   const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [requestFilter, setRequestFilter] = useState("All");
+  const [requestSearch, setRequestSearch] = useState("");
+  const [paymentFilter, setPaymentFilter] = useState("All");
+  const [clerkSearch, setClerkSearch] = useState("");
+  const [supplyPage, setSupplyPage] = useState(1);
+  const [paymentPage, setPaymentPage] = useState(1);
+  const [clerkPage, setClerkPage] = useState(1);
+  const [clerkForm, setClerkForm] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    password: "",
+  });
+
+  const filteredSupply = useMemo(() => {
+    const query = requestSearch.trim().toLowerCase();
+    return dashboard.supply_requests.filter((item) => {
+      const matchesStatus = requestFilter === "All" || item.status === requestFilter;
+      const matchesQuery =
+        !query ||
+        item.product.toLowerCase().includes(query) ||
+        item.requested_by.toLowerCase().includes(query);
+      return matchesStatus && matchesQuery;
+    });
+  }, [dashboard.supply_requests, requestFilter, requestSearch]);
+
+  const filteredPayments = useMemo(() => {
+    return dashboard.payment_status.filter((item) =>
+      paymentFilter === "All" ? true : item.payment_status === paymentFilter
+    );
+  }, [dashboard.payment_status, paymentFilter]);
+
+  const filteredClerks = useMemo(() => {
+    const query = clerkSearch.trim().toLowerCase();
+    if (!query) return dashboard.clerks;
+    return dashboard.clerks.filter(
+      (item) =>
+        item.name.toLowerCase().includes(query) || item.email.toLowerCase().includes(query)
+    );
+  }, [dashboard.clerks, clerkSearch]);
+
+  const supplyPages = Math.max(1, Math.ceil(filteredSupply.length / PAGE_SIZE));
+  const paymentPages = Math.max(1, Math.ceil(filteredPayments.length / PAGE_SIZE));
+  const clerkPages = Math.max(1, Math.ceil(filteredClerks.length / PAGE_SIZE));
+
+  const pagedSupply = filteredSupply.slice((supplyPage - 1) * PAGE_SIZE, supplyPage * PAGE_SIZE);
+  const pagedPayments = filteredPayments.slice((paymentPage - 1) * PAGE_SIZE, paymentPage * PAGE_SIZE);
+  const pagedClerks = filteredClerks.slice((clerkPage - 1) * PAGE_SIZE, clerkPage * PAGE_SIZE);
+
+  const loadDashboard = async () => {
+    const response = await reportApi.adminDashboard();
+    setDashboard(response.data);
+  };
 
   useEffect(() => {
     let active = true;
 
-    reportApi
-      .adminDashboard()
-      .then((response) => {
-        if (active) {
-          setDashboard(response.data);
-        }
-      })
-      .catch((requestError) => {
+    (async () => {
+      try {
+        await loadDashboard();
+      } catch (requestError) {
         if (!active) return;
         const detail = requestError?.response?.data?.detail;
         setError(typeof detail === "string" ? detail : "Failed to load admin dashboard.");
-      })
-      .finally(() => {
+      } finally {
         if (active) setLoading(false);
-      });
+      }
+    })();
 
     return () => {
       active = false;
     };
   }, []);
 
-  const handleLogout = () => {
-    clearAuthSession();
+  useEffect(() => setSupplyPage(1), [requestFilter, requestSearch]);
+  useEffect(() => setPaymentPage(1), [paymentFilter]);
+  useEffect(() => setClerkPage(1), [clerkSearch]);
+
+  const setTemporaryMessage = (text) => {
+    setMessage(text);
+    window.setTimeout(() => setMessage(""), 2500);
+  };
+
+  const handleLogout = async () => {
+    await logoutSession();
     navigate("/", { replace: true });
+  };
+
+  const handleRequestStatus = async (requestId, action) => {
+    setBusyId(`request-${requestId}`);
+    setError("");
+    try {
+      if (action === "approve") {
+        await supplyRequestsApi.approve(requestId);
+      } else {
+        await supplyRequestsApi.decline(requestId, "Declined by admin");
+      }
+      await loadDashboard();
+      setTemporaryMessage(`Request ${action}d successfully.`);
+    } catch (requestError) {
+      const detail = requestError?.response?.data?.detail;
+      setError(typeof detail === "string" ? detail : `Failed to ${action} request.`);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleTogglePayment = async (item) => {
+    setBusyId(`payment-${item.inventory_id}`);
+    setError("");
+    try {
+      const nextStatus = item.payment_status.toLowerCase() === "paid" ? "unpaid" : "paid";
+      await inventoryApi.updatePaymentStatus(item.inventory_id, nextStatus);
+      await loadDashboard();
+      setTemporaryMessage("Payment status updated.");
+    } catch (requestError) {
+      const detail = requestError?.response?.data?.detail;
+      setError(typeof detail === "string" ? detail : "Failed to update payment status.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleClerkStatus = async (clerk, isActive) => {
+    setBusyId(`clerk-${clerk.id}`);
+    setError("");
+    try {
+      await usersApi.setActive(clerk.id, isActive);
+      await loadDashboard();
+      setTemporaryMessage(`Clerk ${isActive ? "activated" : "deactivated"}.`);
+    } catch (requestError) {
+      const detail = requestError?.response?.data?.detail;
+      setError(typeof detail === "string" ? detail : "Failed to update clerk status.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleDeleteClerk = async (clerk) => {
+    setBusyId(`delete-${clerk.id}`);
+    setError("");
+    try {
+      await usersApi.remove(clerk.id);
+      await loadDashboard();
+      setTemporaryMessage("Clerk deleted.");
+    } catch (requestError) {
+      const detail = requestError?.response?.data?.detail;
+      setError(typeof detail === "string" ? detail : "Failed to delete clerk.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleCreateClerk = async (event) => {
+    event.preventDefault();
+    setBusyId("create-clerk");
+    setError("");
+    try {
+      await usersApi.create({ ...clerkForm, role: "clerk" });
+      setClerkForm({ first_name: "", last_name: "", email: "", password: "" });
+      await loadDashboard();
+      setTemporaryMessage("Clerk created successfully.");
+    } catch (requestError) {
+      const detail = requestError?.response?.data?.detail;
+      setError(typeof detail === "string" ? detail : "Failed to create clerk.");
+    } finally {
+      setBusyId(null);
+    }
   };
 
   const statsCards = [
@@ -146,6 +303,11 @@ export default function AdminPanel() {
             {error}
           </div>
         ) : null}
+        {message ? (
+          <div className="mb-6 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+            {message}
+          </div>
+        ) : null}
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           {statsCards.map((card) => (
@@ -160,10 +322,71 @@ export default function AdminPanel() {
           ))}
         </div>
 
+        <Section title="Register Clerk" subtitle="Create data-entry clerk accounts assigned to your store.">
+          <form onSubmit={handleCreateClerk} className="grid grid-cols-1 gap-3 md:grid-cols-4">
+            <input
+              placeholder="First name"
+              value={clerkForm.first_name}
+              onChange={(e) => setClerkForm((prev) => ({ ...prev, first_name: e.target.value }))}
+              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+              required
+            />
+            <input
+              placeholder="Last name"
+              value={clerkForm.last_name}
+              onChange={(e) => setClerkForm((prev) => ({ ...prev, last_name: e.target.value }))}
+              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+              required
+            />
+            <input
+              type="email"
+              placeholder="clerk@myduka.com"
+              value={clerkForm.email}
+              onChange={(e) => setClerkForm((prev) => ({ ...prev, email: e.target.value }))}
+              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+              required
+            />
+            <input
+              placeholder="Password"
+              value={clerkForm.password}
+              onChange={(e) => setClerkForm((prev) => ({ ...prev, password: e.target.value }))}
+              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+              minLength={8}
+              required
+            />
+            <button
+              type="submit"
+              disabled={busyId === "create-clerk"}
+              className="md:col-span-4 inline-flex items-center justify-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-semibold text-white"
+            >
+              <UserPlus className="h-4 w-4" />
+              {busyId === "create-clerk" ? "Creating..." : "Create Clerk"}
+            </button>
+          </form>
+        </Section>
+
         <Section title="Supply Requests" subtitle="Review and approve stock refill requests.">
+          <div className="mb-3 grid grid-cols-1 gap-3 md:grid-cols-3">
+            <input
+              value={requestSearch}
+              onChange={(e) => setRequestSearch(e.target.value)}
+              placeholder="Search product/clerk"
+              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-xs"
+            />
+            <select
+              value={requestFilter}
+              onChange={(e) => setRequestFilter(e.target.value)}
+              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-xs"
+            >
+              <option>All</option>
+              <option>Pending</option>
+              <option>Approved</option>
+              <option>Declined</option>
+            </select>
+          </div>
           <DataTable
-            headers={["Product", "Quantity", "Requested By", "Date", "Notes", "Status"]}
-            rows={dashboard.supply_requests}
+            headers={["Product", "Quantity", "Requested By", "Date", "Notes", "Status", "Actions"]}
+            rows={pagedSupply}
             renderRow={(item) => (
               <tr key={item.id} className="border-t border-[#223355]">
                 <td className="py-3">{item.product}</td>
@@ -174,16 +397,50 @@ export default function AdminPanel() {
                 <td className="py-3">
                   <StatusBadge status={item.status} />
                 </td>
+                <td className="py-3">
+                  {item.status === "Pending" ? (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleRequestStatus(item.id, "approve")}
+                        disabled={busyId === `request-${item.id}`}
+                        className="rounded bg-emerald-500/20 px-2 py-1 text-xs text-emerald-200"
+                      >
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => handleRequestStatus(item.id, "decline")}
+                        disabled={busyId === `request-${item.id}`}
+                        className="rounded bg-rose-500/20 px-2 py-1 text-xs text-rose-200"
+                      >
+                        Decline
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-[#E2E8F0]/60">No action</span>
+                  )}
+                </td>
               </tr>
             )}
             emptyMessage="No supply requests at the moment."
           />
+          <Pager page={supplyPage} totalPages={supplyPages} onChange={setSupplyPage} />
         </Section>
 
-        <Section title="Product Payment Status" subtitle="Track payment status by product inventory entry.">
+        <Section title="Product Payment Status" subtitle="Track and update supplier payment status.">
+          <div className="mb-3 flex gap-3">
+            <select
+              value={paymentFilter}
+              onChange={(e) => setPaymentFilter(e.target.value)}
+              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-xs"
+            >
+              <option>All</option>
+              <option>Paid</option>
+              <option>Unpaid</option>
+            </select>
+          </div>
           <DataTable
-            headers={["Product", "Stock", "Buy Price", "Payment Status"]}
-            rows={dashboard.payment_status}
+            headers={["Product", "Stock", "Buy Price", "Payment Status", "Actions"]}
+            rows={pagedPayments}
             renderRow={(item) => (
               <tr key={item.inventory_id} className="border-t border-[#223355]">
                 <td className="py-3">{item.product}</td>
@@ -192,16 +449,34 @@ export default function AdminPanel() {
                 <td className="py-3">
                   <StatusBadge status={item.payment_status} />
                 </td>
+                <td className="py-3">
+                  <button
+                    onClick={() => handleTogglePayment(item)}
+                    disabled={busyId === `payment-${item.inventory_id}`}
+                    className="rounded bg-[#2563EB]/20 px-2 py-1 text-xs text-[#93C5FD]"
+                  >
+                    Toggle Status
+                  </button>
+                </td>
               </tr>
             )}
             emptyMessage="No inventory payment records yet."
           />
+          <Pager page={paymentPage} totalPages={paymentPages} onChange={setPaymentPage} />
         </Section>
 
         <Section title="Clerk Management" subtitle="View assigned clerks and account status.">
+          <div className="mb-3">
+            <input
+              value={clerkSearch}
+              onChange={(e) => setClerkSearch(e.target.value)}
+              placeholder="Search clerk name or email"
+              className="w-full rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-xs md:w-80"
+            />
+          </div>
           <DataTable
-            headers={["Name", "Email", "Joined", "Status"]}
-            rows={dashboard.clerks}
+            headers={["Name", "Email", "Joined", "Status", "Actions"]}
+            rows={pagedClerks}
             renderRow={(item) => (
               <tr key={item.id} className="border-t border-[#223355]">
                 <td className="py-3">{item.name}</td>
@@ -210,9 +485,54 @@ export default function AdminPanel() {
                 <td className="py-3">
                   <StatusBadge status={item.status} />
                 </td>
+                <td className="py-3">
+                  <div className="flex gap-2">
+                    {item.status === "Active" ? (
+                      <button
+                        onClick={() => handleClerkStatus(item, false)}
+                        disabled={busyId === `clerk-${item.id}`}
+                        className="rounded bg-rose-500/20 px-2 py-1 text-xs text-rose-200"
+                      >
+                        Deactivate
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleClerkStatus(item, true)}
+                        disabled={busyId === `clerk-${item.id}`}
+                        className="rounded bg-emerald-500/20 px-2 py-1 text-xs text-emerald-200"
+                      >
+                        Activate
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDeleteClerk(item)}
+                      disabled={busyId === `delete-${item.id}`}
+                      className="rounded bg-amber-500/20 px-2 py-1 text-xs text-amber-200"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
               </tr>
             )}
             emptyMessage="No clerks found for this admin."
+          />
+          <Pager page={clerkPage} totalPages={clerkPages} onChange={setClerkPage} />
+        </Section>
+
+        <Section title="Clerk Performance" subtitle="Performance summary for reporting.">
+          <DataTable
+            headers={["Clerk", "Recorded Entries", "Stock Recorded", "Spoilt Recorded"]}
+            rows={dashboard.clerk_performance}
+            renderRow={(item) => (
+              <tr key={item.clerk_id} className="border-t border-[#223355]">
+                <td className="py-3">{item.name}</td>
+                <td className="py-3">{item.recorded_items}</td>
+                <td className="py-3">{item.total_stock_recorded}</td>
+                <td className="py-3">{item.spoilt_recorded}</td>
+              </tr>
+            )}
+            emptyMessage="No clerk performance data yet."
           />
         </Section>
       </main>
@@ -233,7 +553,7 @@ function Section({ title, subtitle, children }) {
 function DataTable({ headers, rows, renderRow, emptyMessage }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[650px] text-sm">
+      <table className="w-full min-w-[680px] text-sm">
         <thead>
           <tr className="text-left text-xs uppercase tracking-wide text-[#E2E8F0]/55">
             {headers.map((header) => (
@@ -274,5 +594,29 @@ function StatusBadge({ status }) {
     <span className={`rounded-full px-3 py-1 text-xs font-medium ${palette[status] || "bg-[#1A2947] text-[#E2E8F0]"}`}>
       {status}
     </span>
+  );
+}
+
+function Pager({ page, totalPages, onChange }) {
+  return (
+    <div className="mt-3 flex items-center justify-end gap-2 text-xs text-[#E2E8F0]/70">
+      <button
+        onClick={() => onChange((prev) => Math.max(1, prev - 1))}
+        disabled={page <= 1}
+        className="rounded border border-[#223355] px-2 py-1 disabled:opacity-40"
+      >
+        Prev
+      </button>
+      <span>
+        Page {page} of {totalPages}
+      </span>
+      <button
+        onClick={() => onChange((prev) => Math.min(totalPages, prev + 1))}
+        disabled={page >= totalPages}
+        className="rounded border border-[#223355] px-2 py-1 disabled:opacity-40"
+      >
+        Next
+      </button>
+    </div>
   );
 }

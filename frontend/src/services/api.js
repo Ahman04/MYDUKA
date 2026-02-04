@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const TOKEN_KEY = "myduka_access_token";
+const ACCESS_TOKEN_KEY = "myduka_access_token";
+const REFRESH_TOKEN_KEY = "myduka_refresh_token";
 const USER_KEY = "myduka_user";
 
 export const api = axios.create({
@@ -28,7 +29,11 @@ export function getDashboardRoute(role) {
 }
 
 export function getStoredToken() {
-  return localStorage.getItem(TOKEN_KEY);
+  return localStorage.getItem(ACCESS_TOKEN_KEY);
+}
+
+export function getStoredRefreshToken() {
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
 }
 
 export function getStoredUser() {
@@ -44,17 +49,29 @@ export function getStoredUser() {
   }
 }
 
-export function saveAuthSession(accessToken, user) {
-  localStorage.setItem(TOKEN_KEY, accessToken);
+export function saveAuthSession(accessToken, user, refreshToken = null) {
+  localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
+  if (refreshToken) {
+    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+  }
   localStorage.setItem(USER_KEY, JSON.stringify(user));
 }
 
 export function clearAuthSession() {
-  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
 }
 
-export function logoutSession() {
+export async function logoutSession() {
+  const refreshToken = getStoredRefreshToken();
+  if (refreshToken) {
+    try {
+      await authApi.logout(refreshToken);
+    } catch {
+      // Ignore logout API errors and clear local session anyway.
+    }
+  }
   clearAuthSession();
 }
 
@@ -70,8 +87,14 @@ export const authApi = {
   login(email, password) {
     return api.post("/api/auth/login", { email, password });
   },
+  registerAdminFromInvite(payload) {
+    return api.post("/api/auth/admin-invite/register", payload);
+  },
   me() {
     return api.get("/api/auth/me");
+  },
+  logout(refreshToken) {
+    return api.post("/api/auth/logout", { refresh_token: refreshToken });
   },
 };
 
@@ -84,5 +107,71 @@ export const reportApi = {
   },
   merchantDashboard() {
     return api.get("/api/reports/merchant/dashboard");
+  },
+};
+
+export const usersApi = {
+  list(params = {}) {
+    return api.get("/api/users", { params });
+  },
+  create(payload) {
+    return api.post("/api/users/create", payload);
+  },
+  setActive(userId, isActive) {
+    return api.patch(`/api/users/${userId}/deactivate`, { is_active: isActive });
+  },
+  remove(userId) {
+    return api.delete(`/api/users/${userId}`);
+  },
+  createAdminInvite(payload) {
+    return api.post("/api/users/admin-invites", payload);
+  },
+};
+
+export const storesApi = {
+  list(params = {}) {
+    return api.get("/api/stores", { params });
+  },
+};
+
+export const productsApi = {
+  list(params = {}) {
+    return api.get("/api/products", { params });
+  },
+};
+
+export const inventoryApi = {
+  create(payload) {
+    return api.post("/api/inventory", payload);
+  },
+  update(inventoryId, payload) {
+    return api.put(`/api/inventory/${inventoryId}`, payload);
+  },
+  remove(inventoryId) {
+    return api.delete(`/api/inventory/${inventoryId}`);
+  },
+  updatePaymentStatus(inventoryId, paymentStatus) {
+    return api.patch(`/api/inventory/${inventoryId}/payment-status`, {
+      payment_status: paymentStatus,
+    });
+  },
+};
+
+export const supplyRequestsApi = {
+  list(params = {}) {
+    return api.get("/api/supply-requests", { params });
+  },
+  create(payload) {
+    return api.post("/api/supply-requests", payload);
+  },
+  approve(requestId, adminNotes = "") {
+    return api.post(`/api/supply-requests/${requestId}/approve`, {
+      admin_notes: adminNotes,
+    });
+  },
+  decline(requestId, adminNotes) {
+    return api.post(`/api/supply-requests/${requestId}/decline`, {
+      admin_notes: adminNotes,
+    });
   },
 };

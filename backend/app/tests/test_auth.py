@@ -1,4 +1,5 @@
 import pytest
+from app.models.store import Store
 
 pytestmark = pytest.mark.anyio
 
@@ -100,3 +101,32 @@ async def test_logout_revokes_refresh_token(client, user_factory):
         json={"refresh_token": refresh_token},
     )
     assert refresh.status_code == 401
+
+
+async def test_superuser_can_invite_admin_and_register_with_token(client, db, user_factory, auth_headers):
+    merchant = user_factory(email="merchant@myduka.com", role="superuser", password="merchant123")
+    store = Store(name="Downtown", location="Nairobi")
+    db.add(store)
+    db.commit()
+    db.refresh(store)
+
+    invite = await client.post(
+        "/api/users/admin-invites",
+        headers=auth_headers(merchant),
+        json={"email": "new-admin@myduka.com", "store_id": store.id},
+    )
+    assert invite.status_code == 200, invite.text
+    invite_token = invite.json()["invite_token"]
+
+    register = await client.post(
+        "/api/auth/admin-invite/register",
+        json={
+            "invite_token": invite_token,
+            "first_name": "New",
+            "last_name": "Admin",
+            "password": "AdminPass123",
+        },
+    )
+    assert register.status_code == 200, register.text
+    assert register.json()["user"]["role"] == "admin"
+    assert register.json()["user"]["store_id"] == store.id

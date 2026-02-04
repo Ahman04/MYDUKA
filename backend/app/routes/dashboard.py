@@ -1,6 +1,4 @@
-"""
-Dashboard reporting endpoints for admin, clerk, and merchant views.
-"""
+"""Dashboard reporting endpoints for admin, clerk, and merchant views."""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import case, distinct, func
 from sqlalchemy.orm import Session
@@ -20,6 +18,7 @@ from app.schemas.reports import (
     ClerkDashboardResponse,
     ClerkDashboardStats,
     ClerkListItem,
+    ClerkPerformanceItem,
     ClerkProductItem,
     MerchantAdminItem,
     MerchantDashboardResponse,
@@ -33,9 +32,7 @@ router = APIRouter(prefix="/api/reports", tags=["reports"])
 
 
 def _sum_or_zero(value) -> float:
-    if value is None:
-        return 0.0
-    return float(value)
+    return 0.0 if value is None else float(value)
 
 
 @router.get("/admin/dashboard", response_model=AdminDashboardResponse)
@@ -60,16 +57,14 @@ async def admin_dashboard(
         .count()
     )
     store_value = _sum_or_zero(
-        inventory_query.with_entities(
-            func.sum(Inventory.quantity_in_stock * Inventory.selling_price)
-        ).scalar()
+        inventory_query.with_entities(func.sum(Inventory.quantity_in_stock * Inventory.selling_price)).scalar()
     )
 
     raw_requests = (
         request_query.join(Product, Product.id == SupplyRequest.product_id)
         .join(User, User.id == SupplyRequest.requested_by)
         .order_by(SupplyRequest.created_at.desc())
-        .limit(30)
+        .limit(40)
         .all()
     )
     supply_requests = [
@@ -85,14 +80,16 @@ async def admin_dashboard(
         for item in raw_requests
     ]
 
-    raw_inventory = inventory_query.join(Product, Product.id == Inventory.product_id).order_by(
-        Inventory.updated_at.desc()
-    ).limit(50).all()
+    raw_inventory = (
+        inventory_query.join(Product, Product.id == Inventory.product_id)
+        .order_by(Inventory.updated_at.desc())
+        .limit(80)
+        .all()
+    )
     payment_status = [
         AdminPaymentStatusItem(
             inventory_id=item.id,
             product=item.product.name,
-            supplier=None,
             stock=item.quantity_in_stock,
             buy_price=item.buying_price,
             payment_status=item.payment_status.capitalize(),
@@ -100,6 +97,7 @@ async def admin_dashboard(
         for item in raw_inventory
     ]
 
+    clerks_raw = clerk_query.order_by(User.created_at.desc()).limit(80).all()
     clerks = [
         ClerkListItem(
             id=clerk.id,
@@ -108,8 +106,39 @@ async def admin_dashboard(
             joined_date=clerk.created_at,
             status="Active" if clerk.is_active else "Inactive",
         )
-        for clerk in clerk_query.order_by(User.created_at.desc()).limit(50).all()
+        for clerk in clerks_raw
     ]
+
+    performance_rows = (
+        inventory_query.with_entities(
+            Inventory.created_by,
+            func.count(Inventory.id),
+            func.sum(Inventory.quantity_in_stock),
+            func.sum(Inventory.quantity_spoilt),
+        )
+        .group_by(Inventory.created_by)
+        .all()
+    )
+    metrics_by_clerk = {
+        row[0]: {
+            "recorded_items": int(row[1] or 0),
+            "total_stock_recorded": int(row[2] or 0),
+            "spoilt_recorded": int(row[3] or 0),
+        }
+        for row in performance_rows
+    }
+    clerk_performance = []
+    for clerk in clerks_raw:
+        metric = metrics_by_clerk.get(clerk.id, {})
+        clerk_performance.append(
+            ClerkPerformanceItem(
+                clerk_id=clerk.id,
+                name=f"{clerk.first_name} {clerk.last_name}",
+                recorded_items=metric.get("recorded_items", 0),
+                total_stock_recorded=metric.get("total_stock_recorded", 0),
+                spoilt_recorded=metric.get("spoilt_recorded", 0),
+            )
+        )
 
     return AdminDashboardResponse(
         stats=AdminDashboardStats(
@@ -121,6 +150,7 @@ async def admin_dashboard(
         supply_requests=supply_requests,
         payment_status=payment_status,
         clerks=clerks,
+        clerk_performance=clerk_performance,
     )
 
 
@@ -130,10 +160,7 @@ async def clerk_dashboard(
     db: Session = Depends(get_db),
 ):
     if current_user.role != "clerk":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only clerks can access clerk dashboard",
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only clerks can access clerk dashboard")
 
     records = (
         db.query(Inventory)
@@ -177,36 +204,25 @@ async def merchant_dashboard(
     db: Session = Depends(get_db),
 ):
     _ = current_user
-
     active_stores = db.query(Store).filter(Store.is_active.is_(True)).count()
-    active_admins = (
-        db.query(User).filter(User.role == "admin", User.is_active.is_(True)).count()
-    )
+    active_admins = db.query(User).filter(User.role == "admin", User.is_active.is_(True)).count()
     total_products = db.query(Product).filter(Product.is_active.is_(True)).count()
-    estimated_revenue = _sum_or_zero(
-        db.query(func.sum(Inventory.quantity_in_stock * Inventory.selling_price)).scalar()
-    )
+    estimated_revenue = _sum_or_zero(db.query(func.sum(Inventory.quantity_in_stock * Inventory.selling_price)).scalar())
 
     performance_rows = (
         db.query(
             Product.name.label("product"),
             func.sum(Inventory.quantity_in_stock * Inventory.selling_price).label("sales"),
-            func.sum(
-                (Inventory.selling_price - Inventory.buying_price) * Inventory.quantity_in_stock
-            ).label("profit"),
+            func.sum((Inventory.selling_price - Inventory.buying_price) * Inventory.quantity_in_stock).label("profit"),
         )
         .join(Inventory, Inventory.product_id == Product.id)
         .group_by(Product.id)
         .order_by(func.sum(Inventory.quantity_in_stock * Inventory.selling_price).desc())
-        .limit(10)
+        .limit(12)
         .all()
     )
     performance = [
-        MerchantPerformanceItem(
-            product=row.product,
-            sales=_sum_or_zero(row.sales),
-            profit=_sum_or_zero(row.profit),
-        )
+        MerchantPerformanceItem(product=row.product, sales=_sum_or_zero(row.sales), profit=_sum_or_zero(row.profit))
         for row in performance_rows
     ]
 
@@ -230,46 +246,69 @@ async def merchant_dashboard(
             )
         ).scalar()
     )
+
     total_payment = paid_amount + unpaid_amount
     paid_percentage = (paid_amount / total_payment * 100.0) if total_payment else 0.0
     unpaid_percentage = (unpaid_amount / total_payment * 100.0) if total_payment else 0.0
 
-    admin_by_store = {
-        admin.store_id: admin
-        for admin in db.query(User).filter(User.role == "admin").all()
-        if admin.store_id is not None
-    }
-    stores = []
-    for store in db.query(Store).order_by(Store.created_at.desc()).all():
-        admin = admin_by_store.get(store.id)
-        admin_name = None
-        if admin:
-            admin_name = f"{admin.first_name} {admin.last_name}"
-        stores.append(
-            MerchantStoreItem(
-                id=store.id,
-                name=store.name,
-                location=store.location,
-                admin_name=admin_name,
-                status="Active" if store.is_active else "Inactive",
-            )
+    store_rows = (
+        db.query(
+            Store.id,
+            Store.name,
+            Store.location,
+            Store.is_active,
+            func.sum(Inventory.quantity_in_stock * Inventory.selling_price).label("sales_total"),
+            func.sum(
+                case(
+                    (Inventory.payment_status == "paid", Inventory.buying_price * Inventory.quantity_in_stock),
+                    else_=0,
+                )
+            ).label("paid_total"),
+            func.sum(
+                case(
+                    (Inventory.payment_status == "unpaid", Inventory.buying_price * Inventory.quantity_in_stock),
+                    else_=0,
+                )
+            ).label("unpaid_total"),
         )
+        .outerjoin(Inventory, Inventory.store_id == Store.id)
+        .group_by(Store.id)
+        .order_by(Store.created_at.desc())
+        .all()
+    )
 
-    admins = []
-    for admin in db.query(User).filter(User.role == "admin").order_by(User.created_at.desc()).all():
-        store_name = None
-        if admin.store_id:
-            store = db.query(Store).filter(Store.id == admin.store_id).first()
-            store_name = store.name if store else None
-        admins.append(
-            MerchantAdminItem(
-                id=admin.id,
-                name=f"{admin.first_name} {admin.last_name}",
-                email=admin.email,
-                store=store_name,
-                status="Active" if admin.is_active else "Inactive",
-            )
+    admins = db.query(User).filter(User.role == "admin").order_by(User.created_at.desc()).all()
+    admin_by_store = {admin.store_id: admin for admin in admins if admin.store_id is not None}
+    store_name_by_id = {row.id: row.name for row in store_rows}
+
+    stores = [
+        MerchantStoreItem(
+            id=row.id,
+            name=row.name,
+            location=row.location,
+            admin_name=(
+                f"{admin_by_store[row.id].first_name} {admin_by_store[row.id].last_name}"
+                if row.id in admin_by_store
+                else None
+            ),
+            status="Active" if row.is_active else "Inactive",
+            sales_total=_sum_or_zero(row.sales_total),
+            paid_total=_sum_or_zero(row.paid_total),
+            unpaid_total=_sum_or_zero(row.unpaid_total),
         )
+        for row in store_rows
+    ]
+
+    admin_items = [
+        MerchantAdminItem(
+            id=admin.id,
+            name=f"{admin.first_name} {admin.last_name}",
+            email=admin.email,
+            store=store_name_by_id.get(admin.store_id),
+            status="Active" if admin.is_active else "Inactive",
+        )
+        for admin in admins
+    ]
 
     return MerchantDashboardResponse(
         stats=MerchantDashboardStats(
@@ -286,5 +325,5 @@ async def merchant_dashboard(
             unpaid_percentage=unpaid_percentage,
         ),
         stores=stores,
-        admins=admins,
+        admins=admin_items,
     )

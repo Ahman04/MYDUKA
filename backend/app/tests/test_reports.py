@@ -13,9 +13,9 @@ async def test_list_stores_requires_authentication(client):
     assert response.status_code == 401
 
 
-async def test_admin_can_create_and_list_stores(client, user_factory, auth_headers):
-    admin = user_factory(email="admin@myduka.com", role="admin", password="admin123")
-    headers = auth_headers(admin)
+async def test_superuser_can_create_and_list_stores(client, user_factory, auth_headers):
+    merchant = user_factory(email="merchant@myduka.com", role="superuser", password="merchant123")
+    headers = auth_headers(merchant)
 
     create = await client.post(
         "/api/stores/",
@@ -33,6 +33,18 @@ async def test_admin_can_create_and_list_stores(client, user_factory, auth_heade
     assert listing.status_code == 200
     assert len(listing.json()) == 1
     assert listing.json()[0]["name"] == "Westlands Branch"
+
+
+async def test_admin_cannot_create_store(client, user_factory, auth_headers):
+    admin = user_factory(email="admin@myduka.com", role="admin", password="admin123")
+
+    response = await client.post(
+        "/api/stores/",
+        headers=auth_headers(admin),
+        json={"name": "Nope", "location": "Nowhere"},
+    )
+
+    assert response.status_code == 403
 
 
 async def test_clerk_cannot_create_store(client, user_factory, auth_headers):

@@ -4,7 +4,7 @@ Product management routes
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.core.dependencies import get_current_user, check_permission
+from app.core.dependencies import get_current_user
 from app.models.user import User
 from app.models.product import Product
 from app.schemas.product import (
@@ -18,13 +18,18 @@ router = APIRouter(prefix="/api/products", tags=["products"])
 @router.post("/", response_model=ProductResponse)
 async def create_product(
     product_data: ProductCreate,
-    current_user: User = Depends(check_permission("admin")),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Create a new product
-    Only admins can create products
+    Create a new product.
+    Clerks/admins/merchants can create products for inventory workflows.
     """
+    if current_user.role not in {"clerk", "admin", "superuser"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions to create products"
+        )
     # Check if SKU already exists
     existing_product = db.query(Product).filter(Product.sku == product_data.sku).first()
     if existing_product:
@@ -92,7 +97,7 @@ async def get_product(
 async def update_product(
     product_id: int,
     product_data: ProductUpdate,
-    current_user: User = Depends(check_permission("admin")),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
@@ -107,6 +112,12 @@ async def update_product(
             detail="Product not found"
         )
     
+    if current_user.role not in {"admin", "superuser"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admin or merchant can update products"
+        )
+
     # Check if new SKU is unique
     if product_data.sku and product_data.sku != product.sku:
         existing = db.query(Product).filter(Product.sku == product_data.sku).first()
@@ -139,13 +150,19 @@ async def update_product(
 @router.delete("/{product_id}")
 async def delete_product(
     product_id: int,
-    current_user: User = Depends(check_permission("admin")),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
     Delete a product
     Only admins can delete products
     """
+    if current_user.role not in {"admin", "superuser"}:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admin or merchant can delete products"
+        )
+
     product = db.query(Product).filter(Product.id == product_id).first()
     
     if not product:

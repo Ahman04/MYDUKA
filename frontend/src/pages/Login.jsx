@@ -1,15 +1,25 @@
-import { useState } from "react";
+/**
+ * Authentication page.
+ * Handles standard sign-in and admin invite completion using invite tokens.
+ */
+import { useMemo, useState } from "react";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { authApi, getDashboardRoute, saveAuthSession } from "../services/api";
 
 export default function Login() {
+  const [searchParams] = useSearchParams();
+  const inviteToken = searchParams.get("invite_token");
+  const isInviteFlow = Boolean(inviteToken);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const roleLabel = useMemo(() => (isInviteFlow ? "Complete Admin Invite" : "Sign In"), [isInviteFlow]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,9 +27,16 @@ export default function Login() {
     setIsSubmitting(true);
 
     try {
-      const response = await authApi.login(email.trim(), password);
-      const { access_token: accessToken, user } = response.data;
-      saveAuthSession(accessToken, user);
+      const response = isInviteFlow
+        ? await authApi.registerAdminFromInvite({
+            invite_token: inviteToken,
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
+            password,
+          })
+        : await authApi.login(email.trim(), password);
+      const { access_token: accessToken, refresh_token: refreshToken, user } = response.data;
+      saveAuthSession(accessToken, user, refreshToken);
       navigate(getDashboardRoute(user?.role), { replace: true });
     } catch (requestError) {
       const detail = requestError?.response?.data?.detail;
@@ -84,33 +101,61 @@ export default function Login() {
               </div>
             </div>
 
-            <h2 className="mt-6 text-center text-2xl font-bold text-[#E2E8F0]">
-              Sign In
-            </h2>
+            <h2 className="mt-6 text-center text-2xl font-bold text-[#E2E8F0]">{roleLabel}</h2>
             <p className="mt-2 text-center text-sm text-[#E2E8F0]/70">
-              Welcome back! Please enter your details
+              {isInviteFlow
+                ? "Set your admin profile to activate the invite."
+                : "Welcome back! Please enter your details"}
             </p>
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-5">
-              {/* EMAIL */}
-              <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-[#E2E8F0]/70 mb-3">
-                  <Mail className="h-4 w-4 text-[#E2E8F0]/70" />
-                  Email
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-[#E2E8F0]/50" />
+              {isInviteFlow ? (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-[#E2E8F0]/70">First Name</label>
+                    <input
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="w-full rounded-xl border border-[#1E293B] bg-[#1E293B] px-4 py-2.5 text-sm text-[#E2E8F0] placeholder-[#E2E8F0]/50 focus:border-[#63C2B0] focus:outline-none focus:ring-2 focus:ring-[#63C2B0]/30"
+                    />
                   </div>
-                  <input
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-12 pr-4 py-2.5 bg-[#1E293B] backdrop-blur-md border border-[#1E293B] rounded-xl text-sm text-[#E2E8F0] placeholder-[#E2E8F0]/50 focus:outline-none focus:ring-2 focus:ring-[#63C2B0]/30 focus:border-[#63C2B0] transition-all"
-                  />
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-[#E2E8F0]/70">Last Name</label>
+                    <input
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="w-full rounded-xl border border-[#1E293B] bg-[#1E293B] px-4 py-2.5 text-sm text-[#E2E8F0] placeholder-[#E2E8F0]/50 focus:border-[#63C2B0] focus:outline-none focus:ring-2 focus:ring-[#63C2B0]/30"
+                    />
+                  </div>
                 </div>
-              </div>
+              ) : null}
+              {/* EMAIL */}
+              {isInviteFlow ? (
+                <div className="rounded-xl border border-[#1E293B] bg-[#0F172A] px-4 py-3 text-sm text-[#E2E8F0]/75">
+                  Admin invite token detected. Your email will be taken from the invite link.
+                </div>
+              ) : (
+                <div>
+                  <label className="mb-3 flex items-center gap-2 text-sm font-medium text-[#E2E8F0]/70">
+                    <Mail className="h-4 w-4 text-[#E2E8F0]/70" />
+                    Email
+                  </label>
+                  <div className="relative">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                      <Mail className="h-5 w-5 text-[#E2E8F0]/50" />
+                    </div>
+                    <input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full rounded-xl border border-[#1E293B] bg-[#1E293B] py-2.5 pl-12 pr-4 text-sm text-[#E2E8F0] placeholder-[#E2E8F0]/50 transition-all focus:border-[#63C2B0] focus:outline-none focus:ring-2 focus:ring-[#63C2B0]/30"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* PASSWORD */}
               <div>
@@ -144,22 +189,24 @@ export default function Login() {
               </div>
 
               {/* REMEMBER & FORGOT */}
-              <div className="flex items-center justify-between text-xs">
-                <label className="flex items-center gap-2 text-[#E2E8F0]/70">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-[#1E293B] bg-[#1E293B] text-[#63C2B0] focus:ring-[#63C2B0]/30"
-                  />
-                  Remember me
-                </label>
+              {!isInviteFlow ? (
+                <div className="flex items-center justify-between text-xs">
+                  <label className="flex items-center gap-2 text-[#E2E8F0]/70">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-[#1E293B] bg-[#1E293B] text-[#63C2B0] focus:ring-[#63C2B0]/30"
+                    />
+                    Remember me
+                  </label>
 
-                <button
-                  type="button"
-                  className="text-[#63C2B0] hover:text-[#63C2B0] transition-colors"
-                >
-                  Forgot password?
-                </button>
-              </div>
+                  <button
+                    type="button"
+                    className="text-[#63C2B0] hover:text-[#63C2B0] transition-colors"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+              ) : null}
 
               {error ? (
                 <div className="rounded-xl border border-red-500/20 bg-red-500/10 backdrop-blur-md px-4 py-3 text-sm text-red-300">
@@ -173,7 +220,7 @@ export default function Login() {
                 disabled={isSubmitting}
                 className="w-full rounded-xl bg-[#63C2B0] py-2.5 text-sm font-semibold text-[#0F172A] shadow-lg shadow-[#63C2B0]/20 hover:shadow-[#63C2B0]/30 hover:scale-[1.02] transition-all duration-200"
               >
-                {isSubmitting ? "Signing In..." : "Log In"}
+                {isSubmitting ? "Working..." : isInviteFlow ? "Create Admin Account" : "Log In"}
               </button>
             </form>
 
@@ -195,14 +242,16 @@ export default function Login() {
               </span>
             </div>
             
-            <div className="mt-6 border-t border-[#1E293B] pt-5">
-              <p className="font-semibold text-[#E2E8F0] text-xs mb-2">Demo Credentials:</p>
-              <div className="space-y-1 text-[11px] text-[#E2E8F0]/70">
-                <p><span className="text-[#E2E8F0] font-medium">Merchant:</span> merchant@myduka.com / merchant123</p>
-                <p><span className="text-[#E2E8F0] font-medium">Admin:</span> admin@myduka.com / admin123</p>
-                <p><span className="text-[#E2E8F0] font-medium">Clerk:</span> clerk@myduka.com / clerk123</p>
+            {!isInviteFlow ? (
+              <div className="mt-6 border-t border-[#1E293B] pt-5">
+                <p className="mb-2 text-xs font-semibold text-[#E2E8F0]">Demo Credentials:</p>
+                <div className="space-y-1 text-[11px] text-[#E2E8F0]/70">
+                  <p><span className="font-medium text-[#E2E8F0]">Merchant:</span> merchant@myduka.com / merchant123</p>
+                  <p><span className="font-medium text-[#E2E8F0]">Admin:</span> admin@myduka.com / admin123</p>
+                  <p><span className="font-medium text-[#E2E8F0]">Clerk:</span> clerk@myduka.com / clerk123</p>
+                </div>
               </div>
-            </div>
+            ) : null}
           </div>
         </div>
       </div>

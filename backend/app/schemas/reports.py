@@ -1,28 +1,23 @@
-"""
-Pydantic schemas for Inventory and SupplyRequest validation
-"""
-from pydantic import BaseModel, ConfigDict, Field
-from typing import List, Optional
+"""Pydantic schemas for Inventory/Supply validation and dashboard reporting."""
 from datetime import datetime
 from enum import Enum
+from typing import List, Optional
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PaymentStatus(str, Enum):
-    """Payment status"""
     PAID = "paid"
     UNPAID = "unpaid"
 
 
 class SupplyRequestStatus(str, Enum):
-    """Supply request status"""
     PENDING = "pending"
     APPROVED = "approved"
     DECLINED = "declined"
 
 
-# ===== Inventory Schemas =====
 class InventoryCreate(BaseModel):
-    """Schema for recording inventory entry"""
     product_id: int
     store_id: int
     quantity_received: int = Field(..., ge=0)
@@ -35,7 +30,6 @@ class InventoryCreate(BaseModel):
 
 
 class InventoryUpdate(BaseModel):
-    """Schema for updating inventory"""
     quantity_in_stock: Optional[int] = None
     quantity_spoilt: Optional[int] = None
     payment_status: Optional[PaymentStatus] = None
@@ -43,7 +37,6 @@ class InventoryUpdate(BaseModel):
 
 
 class InventoryResponse(BaseModel):
-    """Schema for inventory response"""
     id: int
     product_id: int
     store_id: int
@@ -56,13 +49,11 @@ class InventoryResponse(BaseModel):
     remarks: Optional[str]
     created_at: datetime
     updated_at: datetime
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
-# ===== Supply Request Schemas =====
 class SupplyRequestCreate(BaseModel):
-    """Schema for creating supply request"""
     product_id: int
     store_id: int
     quantity_requested: int = Field(..., gt=0)
@@ -70,17 +61,14 @@ class SupplyRequestCreate(BaseModel):
 
 
 class SupplyRequestApprove(BaseModel):
-    """Schema for approving supply request"""
     admin_notes: Optional[str] = None
 
 
 class SupplyRequestDecline(BaseModel):
-    """Schema for declining supply request"""
     admin_notes: str = Field(..., min_length=1)
 
 
 class SupplyRequestResponse(BaseModel):
-    """Schema for supply request response"""
     id: int
     product_id: int
     store_id: int
@@ -92,7 +80,7 @@ class SupplyRequestResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     approved_at: Optional[datetime]
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -130,11 +118,20 @@ class ClerkListItem(BaseModel):
     status: str
 
 
+class ClerkPerformanceItem(BaseModel):
+    clerk_id: int
+    name: str
+    recorded_items: int
+    total_stock_recorded: int
+    spoilt_recorded: int
+
+
 class AdminDashboardResponse(BaseModel):
     stats: AdminDashboardStats
     supply_requests: List[AdminSupplyRequestItem]
     payment_status: List[AdminPaymentStatusItem]
     clerks: List[ClerkListItem]
+    clerk_performance: List[ClerkPerformanceItem]
 
 
 class ClerkDashboardStats(BaseModel):
@@ -185,6 +182,9 @@ class MerchantStoreItem(BaseModel):
     location: str
     admin_name: Optional[str]
     status: str
+    sales_total: float
+    paid_total: float
+    unpaid_total: float
 
 
 class MerchantAdminItem(BaseModel):

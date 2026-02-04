@@ -1,9 +1,16 @@
+/**
+ * Merchant dashboard page.
+ * Provides multi-store reporting, admin lifecycle actions, and invite-link onboarding.
+ */
 import { useEffect, useMemo, useState } from "react";
 import {
   BarChart3,
   Building2,
+  Copy,
+  Download,
   Loader2,
   LogOut,
+  MailPlus,
   Store,
   Users,
   Wallet,
@@ -22,7 +29,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { clearAuthSession, getStoredUser, reportApi } from "../services/api";
+import { getStoredUser, logoutSession, reportApi, usersApi } from "../services/api";
 
 const EMPTY_DATA = {
   stats: {
@@ -42,6 +49,8 @@ const EMPTY_DATA = {
   admins: [],
 };
 
+const PAGE_SIZE = 6;
+
 const formatCurrency = (amount) =>
   new Intl.NumberFormat("en-KE", {
     style: "currency",
@@ -54,32 +63,149 @@ export default function MerchantDashboard() {
   const currentUser = useMemo(() => getStoredUser(), []);
   const [dashboard, setDashboard] = useState(EMPTY_DATA);
   const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState(null);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [inviteForm, setInviteForm] = useState({ email: "", store_id: "" });
+  const [latestInvite, setLatestInvite] = useState("");
+  const [adminSearch, setAdminSearch] = useState("");
+  const [adminPage, setAdminPage] = useState(1);
+
+  const filteredAdmins = useMemo(() => {
+    const query = adminSearch.trim().toLowerCase();
+    if (!query) return dashboard.admins;
+    return dashboard.admins.filter(
+      (admin) =>
+        admin.name.toLowerCase().includes(query) ||
+        admin.email.toLowerCase().includes(query) ||
+        (admin.store || "").toLowerCase().includes(query)
+    );
+  }, [dashboard.admins, adminSearch]);
+
+  const adminPages = Math.max(1, Math.ceil(filteredAdmins.length / PAGE_SIZE));
+  const pagedAdmins = filteredAdmins.slice((adminPage - 1) * PAGE_SIZE, adminPage * PAGE_SIZE);
+
+  const loadDashboard = async () => {
+    const response = await reportApi.merchantDashboard();
+    setDashboard(response.data);
+  };
 
   useEffect(() => {
     let active = true;
-    reportApi
-      .merchantDashboard()
-      .then((response) => {
-        if (active) setDashboard(response.data);
-      })
-      .catch((requestError) => {
+    (async () => {
+      try {
+        setLoading(true);
+        setError("");
+        await loadDashboard();
+      } catch (requestError) {
         if (!active) return;
         const detail = requestError?.response?.data?.detail;
         setError(typeof detail === "string" ? detail : "Failed to load merchant dashboard.");
-      })
-      .finally(() => {
+      } finally {
         if (active) setLoading(false);
-      });
+      }
+    })();
 
     return () => {
       active = false;
     };
   }, []);
 
-  const handleLogout = () => {
-    clearAuthSession();
+  useEffect(() => setAdminPage(1), [adminSearch]);
+
+  const setTemporaryMessage = (text) => {
+    setMessage(text);
+    window.setTimeout(() => setMessage(""), 2500);
+  };
+
+  const handleLogout = async () => {
+    await logoutSession();
     navigate("/", { replace: true });
+  };
+
+  const handleInviteAdmin = async (event) => {
+    event.preventDefault();
+    setBusyId("invite");
+    setError("");
+    try {
+      const payload = {
+        email: inviteForm.email,
+        store_id: inviteForm.store_id ? Number(inviteForm.store_id) : null,
+      };
+      const response = await usersApi.createAdminInvite(payload);
+      setLatestInvite(response.data.invite_link);
+      setMessage("Invite link generated.");
+      setInviteForm({ email: "", store_id: "" });
+    } catch (requestError) {
+      const detail = requestError?.response?.data?.detail;
+      setError(typeof detail === "string" ? detail : "Failed to create admin invite.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleAdminStatus = async (admin, isActive) => {
+    setBusyId(`admin-${admin.id}`);
+    setError("");
+    try {
+      await usersApi.setActive(admin.id, isActive);
+      await loadDashboard();
+      setTemporaryMessage(`Admin ${isActive ? "activated" : "deactivated"}.`);
+    } catch (requestError) {
+      const detail = requestError?.response?.data?.detail;
+      setError(typeof detail === "string" ? detail : "Failed to update admin status.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleDeleteAdmin = async (admin) => {
+    setBusyId(`delete-${admin.id}`);
+    setError("");
+    try {
+      await usersApi.remove(admin.id);
+      await loadDashboard();
+      setTemporaryMessage("Admin deleted.");
+    } catch (requestError) {
+      const detail = requestError?.response?.data?.detail;
+      setError(typeof detail === "string" ? detail : "Failed to delete admin.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const copyInviteLink = async () => {
+    if (!latestInvite) return;
+    await navigator.clipboard.writeText(latestInvite);
+    setTemporaryMessage("Invite link copied to clipboard.");
+  };
+
+  const exportCsv = () => {
+    const rows = [
+      ["Section", "Name", "Value", "Extra"],
+      ["Stats", "Active Stores", dashboard.stats.active_stores, ""],
+      ["Stats", "Active Admins", dashboard.stats.active_admins, ""],
+      ["Stats", "Total Products", dashboard.stats.total_products, ""],
+      ["Stats", "Estimated Revenue", dashboard.stats.estimated_revenue, ""],
+      ...dashboard.stores.map((store) => [
+        "Store",
+        store.name,
+        store.sales_total,
+        `paid=${store.paid_total}; unpaid=${store.unpaid_total}`,
+      ]),
+      ...dashboard.performance.map((item) => ["Product Performance", item.product, item.sales, `profit=${item.profit}`]),
+    ];
+
+    const csv = rows
+      .map((row) => row.map((col) => `"${String(col).replaceAll('"', '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "myduka-merchant-report.csv");
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   const stats = [
@@ -138,11 +264,16 @@ export default function MerchantDashboard() {
             </div>
           </div>
           <div className="flex items-center gap-4 text-sm">
+            <button
+              onClick={exportCsv}
+              className="inline-flex items-center gap-2 rounded-lg border border-[#2B3D63] px-3 py-1.5 text-xs text-[#E2E8F0]/80 hover:bg-[#1A2947]"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Export CSV
+            </button>
             <div className="text-right">
               <p className="font-medium text-[#E2E8F0]">
-                {currentUser
-                  ? `${currentUser.first_name} ${currentUser.last_name}`
-                  : "Merchant User"}
+                {currentUser ? `${currentUser.first_name} ${currentUser.last_name}` : "Merchant User"}
               </p>
               <p className="text-xs text-[#E2E8F0]/70">Merchant</p>
             </div>
@@ -169,6 +300,11 @@ export default function MerchantDashboard() {
             {error}
           </div>
         ) : null}
+        {message ? (
+          <div className="mb-6 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+            {message}
+          </div>
+        ) : null}
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           {stats.map((stat) => (
@@ -181,6 +317,53 @@ export default function MerchantDashboard() {
             </div>
           ))}
         </div>
+
+        <section className="mt-8 rounded-xl border border-[#223355] bg-[#111D36] p-5">
+          <h2 className="text-lg font-semibold">Admin Invite Links</h2>
+          <p className="mt-1 text-sm text-[#E2E8F0]/65">Create tokenized invite links for new store admins.</p>
+          <form onSubmit={handleInviteAdmin} className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-4">
+            <input
+              type="email"
+              placeholder="new-admin@myduka.com"
+              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+              value={inviteForm.email}
+              onChange={(e) => setInviteForm((prev) => ({ ...prev, email: e.target.value }))}
+              required
+            />
+            <select
+              value={inviteForm.store_id}
+              onChange={(e) => setInviteForm((prev) => ({ ...prev, store_id: e.target.value }))}
+              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+            >
+              <option value="">Assign store (optional)</option>
+              {dashboard.stores.map((store) => (
+                <option key={store.id} value={store.id}>
+                  {store.name}
+                </option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              disabled={busyId === "invite"}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-semibold text-white"
+            >
+              <MailPlus className="h-4 w-4" />
+              {busyId === "invite" ? "Creating..." : "Create Invite"}
+            </button>
+          </form>
+          {latestInvite ? (
+            <div className="mt-4 rounded-lg border border-[#223355] bg-[#0F172A] p-3 text-sm">
+              <p className="break-all text-[#E2E8F0]/80">{latestInvite}</p>
+              <button
+                onClick={copyInviteLink}
+                className="mt-2 inline-flex items-center gap-2 rounded bg-[#1A2947] px-3 py-1.5 text-xs"
+              >
+                <Copy className="h-3 w-3" />
+                Copy invite link
+              </button>
+            </div>
+          ) : null}
+        </section>
 
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="rounded-xl border border-[#223355] bg-[#111D36] p-6 shadow-sm">
@@ -238,8 +421,8 @@ export default function MerchantDashboard() {
         </div>
 
         <section className="mt-8 rounded-xl border border-[#223355] bg-[#111D36] p-6 shadow-sm">
-          <h2 className="text-base font-semibold text-[#E2E8F0]">Store Management</h2>
-          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <h2 className="text-base font-semibold text-[#E2E8F0]">Store-by-Store Performance</h2>
+          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             {dashboard.stores.length === 0 ? (
               <p className="text-sm text-[#E2E8F0]/65">No stores available yet.</p>
             ) : (
@@ -249,10 +432,13 @@ export default function MerchantDashboard() {
                     <h3 className="text-sm font-semibold text-[#E2E8F0]">{store.name}</h3>
                     <StatusBadge status={store.status} />
                   </div>
-                  <p className="mt-2 text-xs text-[#E2E8F0]/70">{store.location}</p>
-                  <p className="mt-2 text-xs text-[#E2E8F0]/70">
-                    Admin: {store.admin_name || "Unassigned"}
-                  </p>
+                  <p className="mt-1 text-xs text-[#E2E8F0]/70">{store.location}</p>
+                  <p className="mt-2 text-xs text-[#E2E8F0]/70">Admin: {store.admin_name || "Unassigned"}</p>
+                  <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+                    <Metric label="Sales" value={formatCurrency(store.sales_total)} />
+                    <Metric label="Paid" value={formatCurrency(store.paid_total)} />
+                    <Metric label="Unpaid" value={formatCurrency(store.unpaid_total)} />
+                  </div>
                 </div>
               ))
             )}
@@ -260,8 +446,14 @@ export default function MerchantDashboard() {
         </section>
 
         <section className="mt-8 rounded-xl border border-[#223355] bg-[#111D36] shadow-sm">
-          <div className="border-b border-[#223355] px-6 py-4">
+          <div className="flex items-center justify-between border-b border-[#223355] px-6 py-4">
             <h2 className="text-base font-semibold text-[#E2E8F0]">Admin Management</h2>
+            <input
+              value={adminSearch}
+              onChange={(e) => setAdminSearch(e.target.value)}
+              placeholder="Search admin"
+              className="w-56 rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-1.5 text-xs"
+            />
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-sm">
@@ -271,17 +463,18 @@ export default function MerchantDashboard() {
                   <th className="px-6 py-3">Email</th>
                   <th className="px-6 py-3">Store</th>
                   <th className="px-6 py-3">Status</th>
+                  <th className="px-6 py-3">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {dashboard.admins.length === 0 ? (
+                {pagedAdmins.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-6 py-6 text-[#E2E8F0]/65">
+                    <td colSpan={5} className="px-6 py-6 text-[#E2E8F0]/65">
                       No admins found.
                     </td>
                   </tr>
                 ) : (
-                  dashboard.admins.map((admin) => (
+                  pagedAdmins.map((admin) => (
                     <tr key={admin.id} className="border-t border-[#223355]">
                       <td className="px-6 py-4 font-medium text-[#E2E8F0]">{admin.name}</td>
                       <td className="px-6 py-4 text-[#E2E8F0]/70">{admin.email}</td>
@@ -289,12 +482,41 @@ export default function MerchantDashboard() {
                       <td className="px-6 py-4">
                         <StatusBadge status={admin.status} />
                       </td>
+                      <td className="px-6 py-4">
+                        <div className="flex gap-2">
+                          {admin.status === "Active" ? (
+                            <button
+                              onClick={() => handleAdminStatus(admin, false)}
+                              disabled={busyId === `admin-${admin.id}`}
+                              className="rounded bg-rose-500/20 px-2 py-1 text-xs text-rose-200"
+                            >
+                              Deactivate
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleAdminStatus(admin, true)}
+                              disabled={busyId === `admin-${admin.id}`}
+                              className="rounded bg-emerald-500/20 px-2 py-1 text-xs text-emerald-200"
+                            >
+                              Activate
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDeleteAdmin(admin)}
+                            disabled={busyId === `delete-${admin.id}`}
+                            className="rounded bg-amber-500/20 px-2 py-1 text-xs text-amber-200"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))
                 )}
               </tbody>
             </table>
           </div>
+          <Pager page={adminPage} totalPages={adminPages} onChange={setAdminPage} />
         </section>
       </main>
     </div>
@@ -307,4 +529,37 @@ function StatusBadge({ status }) {
       ? "bg-emerald-300/20 text-emerald-200"
       : "bg-slate-300/20 text-slate-200";
   return <span className={`rounded-full px-3 py-1 text-xs font-medium ${classes}`}>{status}</span>;
+}
+
+function Metric({ label, value }) {
+  return (
+    <div className="rounded-lg border border-[#223355] bg-[#111D36] p-2">
+      <p className="text-[10px] text-[#E2E8F0]/60">{label}</p>
+      <p className="mt-1 text-xs font-semibold text-[#E2E8F0]">{value}</p>
+    </div>
+  );
+}
+
+function Pager({ page, totalPages, onChange }) {
+  return (
+    <div className="flex items-center justify-end gap-2 px-6 py-3 text-xs text-[#E2E8F0]/70">
+      <button
+        onClick={() => onChange((prev) => Math.max(1, prev - 1))}
+        disabled={page <= 1}
+        className="rounded border border-[#223355] px-2 py-1 disabled:opacity-40"
+      >
+        Prev
+      </button>
+      <span>
+        Page {page} of {totalPages}
+      </span>
+      <button
+        onClick={() => onChange((prev) => Math.min(totalPages, prev + 1))}
+        disabled={page >= totalPages}
+        className="rounded border border-[#223355] px-2 py-1 disabled:opacity-40"
+      >
+        Next
+      </button>
+    </div>
+  );
 }
