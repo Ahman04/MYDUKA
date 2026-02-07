@@ -78,7 +78,7 @@ export default function App() {
 
   if (isRestoringSession) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0F172A] text-[#E2E8F0]">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 font-sans text-slate-700">
         Restoring session...
       </div>
     );

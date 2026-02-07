@@ -1,9 +1,11 @@
 /**
  * Store admin dashboard page.
  * Manages clerks, supply request decisions, and supplier payment updates.
+ * Includes graphical reports (bar and line charts) per file.txt requirements.
  */
 import { useEffect, useMemo, useState } from "react";
 import {
+  BarChart3,
   Bell,
   ClipboardCheck,
   CreditCard,
@@ -13,7 +15,21 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { useNavigate } from "react-router-dom";
+import { Card, Table, Badge, Button, Spinner } from "flowbite-react";
+import DashboardLayout from "../components/DashboardLayout";
 import {
   getStoredUser,
   inventoryApi,
@@ -62,10 +78,10 @@ export default function AdminPanel() {
   const [message, setMessage] = useState("");
   const [requestFilter, setRequestFilter] = useState("All");
   const [requestSearch, setRequestSearch] = useState("");
-  const [paymentFilter, setPaymentFilter] = useState("All");
   const [clerkSearch, setClerkSearch] = useState("");
   const [supplyPage, setSupplyPage] = useState(1);
-  const [paymentPage, setPaymentPage] = useState(1);
+  const [paymentPaidPage, setPaymentPaidPage] = useState(1);
+  const [paymentUnpaidPage, setPaymentUnpaidPage] = useState(1);
   const [clerkPage, setClerkPage] = useState(1);
   const [clerkForm, setClerkForm] = useState({
     first_name: "",
@@ -86,11 +102,14 @@ export default function AdminPanel() {
     });
   }, [dashboard.supply_requests, requestFilter, requestSearch]);
 
-  const filteredPayments = useMemo(() => {
-    return dashboard.payment_status.filter((item) =>
-      paymentFilter === "All" ? true : item.payment_status === paymentFilter
-    );
-  }, [dashboard.payment_status, paymentFilter]);
+  const paidProducts = useMemo(
+    () => dashboard.payment_status.filter((p) => p.payment_status?.toLowerCase() === "paid"),
+    [dashboard.payment_status]
+  );
+  const unpaidProducts = useMemo(
+    () => dashboard.payment_status.filter((p) => p.payment_status?.toLowerCase() === "unpaid"),
+    [dashboard.payment_status]
+  );
 
   const filteredClerks = useMemo(() => {
     const query = clerkSearch.trim().toLowerCase();
@@ -102,11 +121,13 @@ export default function AdminPanel() {
   }, [dashboard.clerks, clerkSearch]);
 
   const supplyPages = Math.max(1, Math.ceil(filteredSupply.length / PAGE_SIZE));
-  const paymentPages = Math.max(1, Math.ceil(filteredPayments.length / PAGE_SIZE));
+  const paidPages = Math.max(1, Math.ceil(paidProducts.length / PAGE_SIZE));
+  const unpaidPages = Math.max(1, Math.ceil(unpaidProducts.length / PAGE_SIZE));
   const clerkPages = Math.max(1, Math.ceil(filteredClerks.length / PAGE_SIZE));
 
   const pagedSupply = filteredSupply.slice((supplyPage - 1) * PAGE_SIZE, supplyPage * PAGE_SIZE);
-  const pagedPayments = filteredPayments.slice((paymentPage - 1) * PAGE_SIZE, paymentPage * PAGE_SIZE);
+  const pagedPaidProducts = paidProducts.slice((paymentPaidPage - 1) * PAGE_SIZE, paymentPaidPage * PAGE_SIZE);
+  const pagedUnpaidProducts = unpaidProducts.slice((paymentUnpaidPage - 1) * PAGE_SIZE, paymentUnpaidPage * PAGE_SIZE);
   const pagedClerks = filteredClerks.slice((clerkPage - 1) * PAGE_SIZE, clerkPage * PAGE_SIZE);
 
   const loadDashboard = async () => {
@@ -135,7 +156,6 @@ export default function AdminPanel() {
   }, []);
 
   useEffect(() => setSupplyPage(1), [requestFilter, requestSearch]);
-  useEffect(() => setPaymentPage(1), [paymentFilter]);
   useEffect(() => setClerkPage(1), [clerkSearch]);
 
   const setTemporaryMessage = (text) => {
@@ -258,68 +278,83 @@ export default function AdminPanel() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0F172A]">
-      <header className="border-b border-[#1E293B] bg-[#111D36]">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#63C2B0] font-bold text-[#0F172A]">
-              M
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-wide text-[#63C2B0]">MyDuka</p>
-              <h1 className="text-xl font-semibold text-[#E2E8F0]">Admin Dashboard</h1>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <button className="relative rounded-full border border-[#2B3D63] p-2 text-[#E2E8F0]/70 hover:text-[#E2E8F0]">
-              <Bell className="h-5 w-5" />
-            </button>
-            <div className="text-right">
-              <p className="text-sm font-medium text-[#E2E8F0]">
-                {currentUser ? `${currentUser.first_name} ${currentUser.last_name}` : "Admin User"}
-              </p>
-              <p className="text-xs text-[#E2E8F0]/60">Admin</p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="rounded-lg border border-[#2B3D63] p-2 text-[#E2E8F0]/70 hover:bg-[#1E293B] hover:text-[#E2E8F0]"
-              aria-label="Log out"
-            >
-              <LogOut className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-6 py-8 text-[#E2E8F0]">
+    <DashboardLayout role="admin">
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-[hsl(222,60%,28%)] font-sans">Admin Dashboard</h1>
         {loading ? (
-          <div className="flex items-center gap-2 rounded-xl border border-[#223355] bg-[#111D36] px-4 py-3 text-sm">
-            <Loader2 className="h-4 w-4 animate-spin text-[#63C2B0]" />
-            Loading admin data...
+          <div className="flex items-center gap-2">
+            <Spinner size="sm" color="gray" />
+            <span className="text-sm text-gray-600 dark:text-gray-400">Loading admin data...</span>
           </div>
         ) : null}
         {error ? (
-          <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </div>
         ) : null}
         {message ? (
-          <div className="mb-6 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+          <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
             {message}
           </div>
         ) : null}
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           {statsCards.map((card) => (
-            <div key={card.title} className="rounded-xl border border-[#223355] bg-[#111D36] p-4 shadow-sm">
+            <Card key={card.title} className="border-slate-200 bg-white shadow-sm">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-[#E2E8F0]/70">{card.title}</p>
-                <span className="rounded-lg bg-[#1A2947] p-2 text-[#63C2B0]">{card.icon}</span>
+                <p className="text-sm font-medium text-slate-600">{card.title}</p>
+                <span className="rounded-lg bg-[hsl(35,90%,55%)]/20 p-2 text-[hsl(35,90%,45%)]">{card.icon}</span>
               </div>
-              <p className="mt-2 text-2xl font-semibold text-[#E2E8F0]">{card.value}</p>
-              <p className="mt-1 text-xs text-[#E2E8F0]/60">{card.trend}</p>
-            </div>
+              <p className="mt-2 text-2xl font-bold text-slate-800">{card.value}</p>
+              <p className="mt-1 text-xs text-slate-500">{card.trend}</p>
+            </Card>
           ))}
+        </div>
+
+        <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <Section title="Clerk Performance (Bar Chart)" subtitle="Recorded entries, stock, and spoilt items by clerk.">
+            <div className="h-72 rounded-lg bg-slate-50 border border-slate-200 p-4">
+              {dashboard.clerk_performance.length === 0 ? (
+                <div className="flex h-full items-center justify-center text-sm text-slate-600">
+                  No clerk performance data yet.
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={dashboard.clerk_performance}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
+                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#475569" }} />
+                    <YAxis tick={{ fontSize: 11, fill: "#475569" }} />
+                    <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #e2e8f0" }} />
+                    <Legend />
+                    <Bar dataKey="recorded_items" name="Entries" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="total_stock_recorded" name="Stock" fill="#10B981" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="spoilt_recorded" name="Spoilt" fill="#F59E0B" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </Section>
+          <Section title="Individual Entry Performance (Line Chart)" subtitle="Recorded entries trend across clerks.">
+            <div className="h-72 rounded-lg bg-slate-50 border border-slate-200 p-4">
+              {dashboard.clerk_performance.length === 0 ? (
+                <div className="flex h-full items-center justify-center text-sm text-slate-600">
+                  No performance data yet.
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={dashboard.clerk_performance}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
+                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#475569" }} />
+                    <YAxis tick={{ fontSize: 11, fill: "#475569" }} />
+                    <Tooltip contentStyle={{ background: "#ffffff", border: "1px solid #e2e8f0" }} />
+                    <Legend />
+                    <Line type="monotone" dataKey="recorded_items" name="Entries" stroke="#63C2B0" strokeWidth={2} dot={{ fill: "#63C2B0" }} />
+                    <Line type="monotone" dataKey="total_stock_recorded" name="Stock" stroke="#3B82F6" strokeWidth={2} dot={{ fill: "#3B82F6" }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </Section>
         </div>
 
         <Section title="Register Clerk" subtitle="Create data-entry clerk accounts assigned to your store.">
@@ -328,14 +363,14 @@ export default function AdminPanel() {
               placeholder="First name"
               value={clerkForm.first_name}
               onChange={(e) => setClerkForm((prev) => ({ ...prev, first_name: e.target.value }))}
-              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800"
               required
             />
             <input
               placeholder="Last name"
               value={clerkForm.last_name}
               onChange={(e) => setClerkForm((prev) => ({ ...prev, last_name: e.target.value }))}
-              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800"
               required
             />
             <input
@@ -343,21 +378,21 @@ export default function AdminPanel() {
               placeholder="clerk@myduka.com"
               value={clerkForm.email}
               onChange={(e) => setClerkForm((prev) => ({ ...prev, email: e.target.value }))}
-              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800"
               required
             />
             <input
               placeholder="Password"
               value={clerkForm.password}
               onChange={(e) => setClerkForm((prev) => ({ ...prev, password: e.target.value }))}
-              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800"
               minLength={8}
               required
             />
             <button
               type="submit"
               disabled={busyId === "create-clerk"}
-              className="md:col-span-4 inline-flex items-center justify-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-semibold text-white"
+              className="md:col-span-4 inline-flex items-center justify-center gap-2 rounded-lg bg-[hsl(222,60%,28%)] px-4 py-2 text-sm font-semibold text-white hover:bg-[hsl(222,60%,24%)]"
             >
               <UserPlus className="h-4 w-4" />
               {busyId === "create-clerk" ? "Creating..." : "Create Clerk"}
@@ -371,12 +406,12 @@ export default function AdminPanel() {
               value={requestSearch}
               onChange={(e) => setRequestSearch(e.target.value)}
               placeholder="Search product/clerk"
-              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-xs"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800"
             />
             <select
               value={requestFilter}
               onChange={(e) => setRequestFilter(e.target.value)}
-              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-xs"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800"
             >
               <option>All</option>
               <option>Pending</option>
@@ -388,7 +423,7 @@ export default function AdminPanel() {
             headers={["Product", "Quantity", "Requested By", "Date", "Notes", "Status", "Actions"]}
             rows={pagedSupply}
             renderRow={(item) => (
-              <tr key={item.id} className="border-t border-[#223355]">
+              <tr key={item.id} className="border-t border-slate-200">
                 <td className="py-3">{item.product}</td>
                 <td className="py-3">{item.quantity}</td>
                 <td className="py-3">{item.requested_by}</td>
@@ -403,20 +438,20 @@ export default function AdminPanel() {
                       <button
                         onClick={() => handleRequestStatus(item.id, "approve")}
                         disabled={busyId === `request-${item.id}`}
-                        className="rounded bg-emerald-500/20 px-2 py-1 text-xs text-emerald-200"
+                        className="rounded bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-800 hover:bg-emerald-200"
                       >
                         Approve
                       </button>
                       <button
                         onClick={() => handleRequestStatus(item.id, "decline")}
                         disabled={busyId === `request-${item.id}`}
-                        className="rounded bg-rose-500/20 px-2 py-1 text-xs text-rose-200"
+                        className="rounded bg-rose-100 px-2 py-1 text-xs font-semibold text-rose-800 hover:bg-rose-200"
                       >
                         Decline
                       </button>
                     </div>
                   ) : (
-                    <span className="text-xs text-[#E2E8F0]/60">No action</span>
+                    <span className="text-xs text-slate-600">No action</span>
                   )}
                 </td>
               </tr>
@@ -426,44 +461,56 @@ export default function AdminPanel() {
           <Pager page={supplyPage} totalPages={supplyPages} onChange={setSupplyPage} />
         </Section>
 
-        <Section title="Product Payment Status" subtitle="Track and update supplier payment status.">
-          <div className="mb-3 flex gap-3">
-            <select
-              value={paymentFilter}
-              onChange={(e) => setPaymentFilter(e.target.value)}
-              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-xs"
-            >
-              <option>All</option>
-              <option>Paid</option>
-              <option>Unpaid</option>
-            </select>
-          </div>
-          <DataTable
-            headers={["Product", "Stock", "Buy Price", "Payment Status", "Actions"]}
-            rows={pagedPayments}
-            renderRow={(item) => (
-              <tr key={item.inventory_id} className="border-t border-[#223355]">
-                <td className="py-3">{item.product}</td>
-                <td className="py-3">{item.stock}</td>
-                <td className="py-3">{formatCurrency(item.buy_price)}</td>
-                <td className="py-3">
-                  <StatusBadge status={item.payment_status} />
-                </td>
-                <td className="py-3">
-                  <button
-                    onClick={() => handleTogglePayment(item)}
-                    disabled={busyId === `payment-${item.inventory_id}`}
-                    className="rounded bg-[#2563EB]/20 px-2 py-1 text-xs text-[#93C5FD]"
-                  >
-                    Toggle Status
-                  </button>
-                </td>
-              </tr>
-            )}
-            emptyMessage="No inventory payment records yet."
-          />
-          <Pager page={paymentPage} totalPages={paymentPages} onChange={setPaymentPage} />
-        </Section>
+        <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
+          <Section title="Paid Products" subtitle="Products suppliers have been paid for. Well separated for ease of viewing.">
+            <DataTable
+              headers={["Product", "Stock", "Buy Price", "Actions"]}
+              rows={pagedPaidProducts}
+              renderRow={(item) => (
+                <tr key={item.inventory_id} className="border-t border-slate-200">
+                  <td className="py-3">{item.product}</td>
+                  <td className="py-3">{item.stock}</td>
+                  <td className="py-3">{formatCurrency(item.buy_price)}</td>
+                  <td className="py-3">
+                    <button
+                      onClick={() => handleTogglePayment(item)}
+                      disabled={busyId === `payment-${item.inventory_id}`}
+                      className="rounded bg-slate-100 px-2 py-1 text-xs font-semibold text-[hsl(222,60%,28%)] hover:bg-slate-200"
+                    >
+                      Mark Unpaid
+                    </button>
+                  </td>
+                </tr>
+              )}
+              emptyMessage="No paid products yet."
+            />
+            <Pager page={paymentPaidPage} totalPages={paidPages} onChange={setPaymentPaidPage} />
+          </Section>
+          <Section title="Unpaid Products" subtitle="Products pending supplier payment. Change status once paid.">
+            <DataTable
+              headers={["Product", "Stock", "Buy Price", "Actions"]}
+              rows={pagedUnpaidProducts}
+              renderRow={(item) => (
+                <tr key={item.inventory_id} className="border-t border-slate-200">
+                  <td className="py-3">{item.product}</td>
+                  <td className="py-3">{item.stock}</td>
+                  <td className="py-3">{formatCurrency(item.buy_price)}</td>
+                  <td className="py-3">
+                    <button
+                      onClick={() => handleTogglePayment(item)}
+                      disabled={busyId === `payment-${item.inventory_id}`}
+                      className="rounded bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-800 hover:bg-emerald-200"
+                    >
+                      Mark Paid
+                    </button>
+                  </td>
+                </tr>
+              )}
+              emptyMessage="No unpaid products."
+            />
+            <Pager page={paymentUnpaidPage} totalPages={unpaidPages} onChange={setPaymentUnpaidPage} />
+          </Section>
+        </div>
 
         <Section title="Clerk Management" subtitle="View assigned clerks and account status.">
           <div className="mb-3">
@@ -471,16 +518,16 @@ export default function AdminPanel() {
               value={clerkSearch}
               onChange={(e) => setClerkSearch(e.target.value)}
               placeholder="Search clerk name or email"
-              className="w-full rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-xs md:w-80"
+              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 md:w-80"
             />
           </div>
           <DataTable
             headers={["Name", "Email", "Joined", "Status", "Actions"]}
             rows={pagedClerks}
             renderRow={(item) => (
-              <tr key={item.id} className="border-t border-[#223355]">
+              <tr key={item.id} className="border-t border-slate-200">
                 <td className="py-3">{item.name}</td>
-                <td className="py-3 text-[#E2E8F0]/70">{item.email}</td>
+                <td className="py-3 text-slate-600">{item.email}</td>
                 <td className="py-3">{formatDate(item.joined_date)}</td>
                 <td className="py-3">
                   <StatusBadge status={item.status} />
@@ -491,7 +538,7 @@ export default function AdminPanel() {
                       <button
                         onClick={() => handleClerkStatus(item, false)}
                         disabled={busyId === `clerk-${item.id}`}
-                        className="rounded bg-rose-500/20 px-2 py-1 text-xs text-rose-200"
+                        className="rounded bg-rose-100 px-2 py-1 text-xs font-semibold text-rose-800 hover:bg-rose-200"
                       >
                         Deactivate
                       </button>
@@ -499,7 +546,7 @@ export default function AdminPanel() {
                       <button
                         onClick={() => handleClerkStatus(item, true)}
                         disabled={busyId === `clerk-${item.id}`}
-                        className="rounded bg-emerald-500/20 px-2 py-1 text-xs text-emerald-200"
+                        className="rounded bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-800 hover:bg-emerald-200"
                       >
                         Activate
                       </button>
@@ -507,7 +554,7 @@ export default function AdminPanel() {
                     <button
                       onClick={() => handleDeleteClerk(item)}
                       disabled={busyId === `delete-${item.id}`}
-                      className="rounded bg-amber-500/20 px-2 py-1 text-xs text-amber-200"
+                      className="rounded bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-800 hover:bg-amber-200"
                     >
                       Delete
                     </button>
@@ -525,7 +572,7 @@ export default function AdminPanel() {
             headers={["Clerk", "Recorded Entries", "Stock Recorded", "Spoilt Recorded"]}
             rows={dashboard.clerk_performance}
             renderRow={(item) => (
-              <tr key={item.clerk_id} className="border-t border-[#223355]">
+              <tr key={item.clerk_id} className="border-t border-slate-200">
                 <td className="py-3">{item.name}</td>
                 <td className="py-3">{item.recorded_items}</td>
                 <td className="py-3">{item.total_stock_recorded}</td>
@@ -535,18 +582,18 @@ export default function AdminPanel() {
             emptyMessage="No clerk performance data yet."
           />
         </Section>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
 
 function Section({ title, subtitle, children }) {
   return (
-    <section className="mt-8 rounded-xl border border-[#223355] bg-[#111D36] p-5">
-      <h2 className="text-lg font-semibold text-[#E2E8F0]">{title}</h2>
-      <p className="mt-1 text-sm text-[#E2E8F0]/65">{subtitle}</p>
+    <Card className="border-slate-200 bg-white shadow-sm">
+      <h2 className="text-lg font-semibold text-[hsl(222,60%,28%)]">{title}</h2>
+      <p className="mt-1 text-sm text-slate-600">{subtitle}</p>
       <div className="mt-4">{children}</div>
-    </section>
+    </Card>
   );
 }
 
@@ -555,7 +602,7 @@ function DataTable({ headers, rows, renderRow, emptyMessage }) {
     <div className="overflow-x-auto">
       <table className="w-full min-w-[680px] text-sm">
         <thead>
-          <tr className="text-left text-xs uppercase tracking-wide text-[#E2E8F0]/55">
+            <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
             {headers.map((header) => (
               <th key={header} className="pb-3 pr-4">
                 {header}
@@ -566,7 +613,7 @@ function DataTable({ headers, rows, renderRow, emptyMessage }) {
         <tbody>
           {rows.length === 0 ? (
             <tr>
-              <td colSpan={headers.length} className="py-6 text-sm text-[#E2E8F0]/65">
+              <td colSpan={headers.length} className="py-6 text-sm text-slate-600">
                 {emptyMessage}
               </td>
             </tr>
@@ -581,17 +628,17 @@ function DataTable({ headers, rows, renderRow, emptyMessage }) {
 
 function StatusBadge({ status }) {
   const palette = {
-    Pending: "bg-amber-300/20 text-amber-200",
-    Approved: "bg-emerald-300/20 text-emerald-200",
-    Declined: "bg-rose-300/20 text-rose-200",
-    Paid: "bg-emerald-300/20 text-emerald-200",
-    Unpaid: "bg-rose-300/20 text-rose-200",
-    Active: "bg-emerald-300/20 text-emerald-200",
-    Inactive: "bg-slate-300/20 text-slate-200",
+    Pending: "bg-amber-100 text-amber-800",
+    Approved: "bg-emerald-100 text-emerald-800",
+    Declined: "bg-rose-100 text-rose-800",
+    Paid: "bg-emerald-100 text-emerald-800",
+    Unpaid: "bg-rose-100 text-rose-800",
+    Active: "bg-emerald-100 text-emerald-800",
+    Inactive: "bg-slate-200 text-slate-700",
   };
 
   return (
-    <span className={`rounded-full px-3 py-1 text-xs font-medium ${palette[status] || "bg-[#1A2947] text-[#E2E8F0]"}`}>
+    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${palette[status] || "bg-slate-200 text-slate-700"}`}>
       {status}
     </span>
   );
@@ -599,11 +646,11 @@ function StatusBadge({ status }) {
 
 function Pager({ page, totalPages, onChange }) {
   return (
-    <div className="mt-3 flex items-center justify-end gap-2 text-xs text-[#E2E8F0]/70">
+    <div className="mt-3 flex items-center justify-end gap-2 text-xs text-slate-600">
       <button
         onClick={() => onChange((prev) => Math.max(1, prev - 1))}
         disabled={page <= 1}
-        className="rounded border border-[#223355] px-2 py-1 disabled:opacity-40"
+        className="rounded border border-slate-300 px-2 py-1 text-slate-700 hover:bg-slate-50 disabled:opacity-40"
       >
         Prev
       </button>
@@ -613,7 +660,7 @@ function Pager({ page, totalPages, onChange }) {
       <button
         onClick={() => onChange((prev) => Math.min(totalPages, prev + 1))}
         disabled={page >= totalPages}
-        className="rounded border border-[#223355] px-2 py-1 disabled:opacity-40"
+        className="rounded border border-slate-300 px-2 py-1 text-slate-700 hover:bg-slate-50 disabled:opacity-40"
       >
         Next
       </button>

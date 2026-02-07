@@ -3,14 +3,19 @@
 @tailwind utilities;
 
 :root {
+  --primary: hsl(222, 60%, 28%);
+  --primary-hover: hsl(222, 60%, 24%);
+  --secondary: hsl(35, 90%, 55%);
+  --secondary-hover: hsl(35, 90%, 50%);
   color-scheme: light;
 }
 
 body {
   margin: 0;
-  font-family: "Poppins", system-ui, -apple-system, sans-serif;
-  background: #f6f7fb;
-  color: #111827;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  background: #f8fafc;
+  color: #1e293b;
+  -webkit-font-smoothing: antialiased;
 }
 
 @keyframes float {

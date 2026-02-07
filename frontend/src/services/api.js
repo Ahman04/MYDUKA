@@ -144,6 +144,9 @@ export const productsApi = {
 };
 
 export const inventoryApi = {
+  list(params = {}) {
+    return api.get("/api/inventory", { params });
+  },
   create(payload) {
     return api.post("/api/inventory", payload);
   },
@@ -157,6 +160,12 @@ export const inventoryApi = {
     return api.patch(`/api/inventory/${inventoryId}/payment-status`, {
       payment_status: paymentStatus,
     });
+  },
+  getPaidByStore(storeId) {
+    return api.get(`/api/inventory/store/${storeId}/paid`);
+  },
+  getUnpaidByStore(storeId) {
+    return api.get(`/api/inventory/store/${storeId}/unpaid`);
   },
 };
 
