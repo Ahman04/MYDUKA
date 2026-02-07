@@ -5,7 +5,7 @@
  */
 import { useMemo, useState } from "react";
 import { Card, Label, TextInput, Button, Alert } from "flowbite-react";
-import { HiInformationCircle } from "react-icons/hi";
+import { HiInformationCircle, HiMail, HiLockClosed } from "react-icons/hi";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { authApi, getDashboardRoute, saveAuthSession } from "../services/api";
 
@@ -72,7 +72,7 @@ export default function Login() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4 font-sans">
       <div className="w-full max-w-4xl">
-        <div className="grid gap-8 md:grid-cols-2 md:gap-12">
+        <div className="grid gap-10 md:grid-cols-2 md:gap-16">
           <div className="hidden md:block">
             <h1 className="text-4xl font-bold text-[hsl(222,60%,28%)]">
               Welcome to <span className="text-[hsl(35,90%,55%)]">MyDuka</span>
@@ -107,59 +107,61 @@ export default function Login() {
             </div>
           </div>
 
-          <Card className="w-full max-w-md mx-auto border-slate-200 shadow-lg overflow-hidden">
-            <div className="flex justify-center pt-2">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[hsl(222,60%,28%)] font-bold text-lg text-white">
-                M
+          <Card className="w-full max-w-md mx-auto border border-slate-200/80 shadow-xl bg-white/90 backdrop-blur-sm rounded-2xl overflow-hidden">
+            <div className="h-1.5 w-full bg-gradient-to-r from-[hsl(222,60%,28%)] via-[hsl(222,60%,28%)] to-[hsl(35,90%,55%)]" />
+            <div className="px-6 pb-6 pt-4 sm:px-7">
+              <div className="flex justify-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[hsl(222,60%,28%)] font-bold text-lg text-white shadow-md">
+                  M
+                </div>
               </div>
-            </div>
-            <h2 className="text-center text-xl font-bold text-slate-800 mt-3">{roleLabel}</h2>
-            <p className="text-center text-sm text-slate-600 mt-1">
-              {isInviteFlow
-                ? "Set your admin profile to activate the invite."
-                : "Click a role to auto-fill demo credentials"}
-            </p>
+              <h2 className="text-center text-2xl font-bold text-slate-800 mt-4">{roleLabel}</h2>
+              <p className="text-center text-sm text-slate-600 mt-1">
+                {isInviteFlow
+                  ? "Set your admin profile to activate the invite."
+                  : "Click a role to auto-fill demo credentials"}
+              </p>
 
-            {!isInviteFlow && (
-              <div className="mt-4 flex justify-center gap-2">
-                {["Merchant", "Admin", "Clerk"].map((role) => (
-                  <button
-                    key={role}
-                    type="button"
-                    onClick={() => handleRoleClick(role)}
-                    className={`rounded-lg px-4 py-2 text-xs font-semibold transition-all ${
-                      activeRole === role
-                        ? "bg-[hsl(222,60%,28%)] text-white shadow-sm"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800"
-                    }`}
-                  >
-                    {role}
-                  </button>
-                ))}
-              </div>
-            )}
+              {!isInviteFlow && (
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
+                  {["Merchant", "Admin", "Clerk"].map((role) => (
+                    <button
+                      key={role}
+                      type="button"
+                      onClick={() => handleRoleClick(role)}
+                      className={`rounded-full px-4 py-2 text-xs font-semibold transition-all ${
+                        activeRole === role
+                          ? "bg-[hsl(222,60%,28%)] text-white shadow-sm"
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800"
+                      }`}
+                    >
+                      {role}
+                    </button>
+                  ))}
+                </div>
+              )}
 
-            <form onSubmit={handleSubmit} className="mt-5 space-y-4 px-5 sm:px-6">
+              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               {isInviteFlow ? (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <Label htmlFor="firstName" value="First Name" className="text-slate-700" />
+                    <Label htmlFor="firstName" value="First Name" className="text-slate-700 font-medium" />
                     <TextInput
                       id="firstName"
                       type="text"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      className="mt-1.5 w-full h-11 text-base px-3 rounded-lg border-slate-200 focus:border-[hsl(222,60%,28%)] focus:ring-[hsl(222,60%,28%)]"
+                      className="mt-1.5 w-full text-base px-4 py-3 rounded-lg border-slate-300 bg-white shadow-sm transition-all duration-200 focus:border-[hsl(222,60%,28%)] focus:ring-2 focus:ring-[hsl(222,60%,28%)] focus:ring-opacity-20 focus:shadow-md hover:border-slate-400"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="lastName" value="Last Name" className="text-slate-700" />
+                    <Label htmlFor="lastName" value="Last Name" className="text-slate-700 font-medium" />
                     <TextInput
                       id="lastName"
                       type="text"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      className="mt-1.5 w-full h-11 text-base px-3 rounded-lg border-slate-200 focus:border-[hsl(222,60%,28%)] focus:ring-[hsl(222,60%,28%)]"
+                      className="mt-1.5 w-full text-base px-4 py-3 rounded-lg border-slate-300 bg-white shadow-sm transition-all duration-200 focus:border-[hsl(222,60%,28%)] focus:ring-2 focus:ring-[hsl(222,60%,28%)] focus:ring-opacity-20 focus:shadow-md hover:border-slate-400"
                     />
                   </div>
                 </div>
@@ -170,20 +172,25 @@ export default function Login() {
                 </Alert>
               ) : (
                 <div>
-                  <Label htmlFor="email" value="Email" className="text-slate-700" />
-                  <TextInput
-                    id="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => { setEmail(e.target.value); setActiveRole(null); }}
-                    className="mt-1.5 w-full h-11 text-base px-3 rounded-lg border-slate-200 focus:border-[hsl(222,60%,28%)] focus:ring-[hsl(222,60%,28%)]"
-                  />
+                  <Label htmlFor="email" value="Email" className="text-slate-700 font-medium" />
+                  <div className="relative mt-1.5">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <HiMail className="h-5 w-5 text-slate-400" />
+                    </div>
+                    <TextInput
+                      id="email"
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => { setEmail(e.target.value); setActiveRole(null); }}
+                      className="w-full h-12 text-base pl-12 pr-4 rounded-lg border-slate-300 bg-white shadow-sm transition-all duration-200 focus:border-[hsl(222,60%,28%)] focus:ring-2 focus:ring-[hsl(222,60%,28%)] focus:ring-opacity-20 focus:shadow-md hover:border-slate-400"
+                    />
+                  </div>
                 </div>
               )}
               <div>
                 <div className="mb-1.5 flex items-center justify-between">
-                  <Label htmlFor="password" value="Password" className="text-slate-700" />
+                  <Label htmlFor="password" value="Password" className="text-slate-700 font-medium" />
                   <button
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
@@ -192,14 +199,19 @@ export default function Login() {
                     {showPassword ? "Hide" : "Show"}
                   </button>
                 </div>
-                <TextInput
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => { setPassword(e.target.value); setActiveRole(null); }}
-                  className="mt-1.5 w-full h-11 text-base px-3 rounded-lg border-slate-200 focus:border-[hsl(222,60%,28%)] focus:ring-[hsl(222,60%,28%)]"
-                />
+                <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <HiLockClosed className="h-5 w-5 text-slate-400" />
+                  </div>
+                  <TextInput
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => { setPassword(e.target.value); setActiveRole(null); }}
+                    className="w-full h-12 text-base pl-12 pr-4 rounded-lg border-slate-300 bg-white shadow-sm transition-all duration-200 focus:border-[hsl(222,60%,28%)] focus:ring-2 focus:ring-[hsl(222,60%,28%)] focus:ring-opacity-20 focus:shadow-md hover:border-slate-400"
+                  />
+                </div>
               </div>
               {error ? (
                 <Alert color="failure" className="text-sm">
@@ -214,11 +226,12 @@ export default function Login() {
               >
                 {isSubmitting ? "Working..." : isInviteFlow ? "Create Admin Account" : "Log In"}
               </Button>
-            </form>
+              </form>
 
-            <div className="mt-4 pb-5 text-center text-sm text-slate-600">
-              Don&apos;t have an account?{" "}
-              <span className="text-[hsl(222,60%,28%)] hover:underline cursor-pointer font-medium">Sign Up</span>
+              <div className="mt-4 text-center text-sm text-slate-600">
+                Don&apos;t have an account?{" "}
+                <span className="text-[hsl(222,60%,28%)] hover:underline cursor-pointer font-medium">Sign Up</span>
+              </div>
             </div>
           </Card>
         </div>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import Landing from "./pages/Landing.jsx";
 import Login from "./pages/Login.jsx";
 import AdminPanel from "./pages/AdminPanel.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
@@ -19,7 +20,7 @@ function ProtectedRoute({ allowedRoles, children }) {
   const user = getStoredUser();
 
   if (!token || !user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   const userRole = normalizeRole(user.role);
@@ -61,8 +62,8 @@ export default function App() {
           return;
         }
         clearAuthSession();
-        if (location.pathname !== "/") {
-          navigate("/", { replace: true });
+        if (location.pathname !== "/" && location.pathname !== "/login") {
+          navigate("/login", { replace: true });
         }
       })
       .finally(() => {
@@ -86,7 +87,8 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
+      <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
       <Route
         path="/admin"
         element={
