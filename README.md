@@ -1,117 +1,167 @@
-# MYDUKA
+MYDUKA
 
-MYDUKA is an e-commerce platform that allows users to buy and sell products online. It provides a user-friendly interface for browsing products, managing orders, and processing payments.  and generate actionable business insights through real-time reports and visual analytics.
+A Digital Inventory & Sales Management Platform for Small and Medium Enterprises
 
-The system is built for small to medium-sized businesses seeking a reliable, digital alternative to manual record keeping.
+Executive Summary
 
-PROJECT OVERVIEW
+MYDUKA is a web-based e-commerce and inventory management platform designed for small to medium-sized businesses (SMEs). The system digitizes inventory operations, enables controlled access through role-based permissions, and provides real-time business insights using automated reports and visual analytics. By replacing manual record keeping with a centralized digital solution, MYDUKA improves accuracy, accountability, and decision-making while reducing operational inefficiencies.
 
-Manual inventory management is still widely used by many businesses, leading to inefficiencies and costly errors. MyDuka digitizes inventory workflows, enforces accountability through role-based access, and provides clear insights to support informed decision-making.
+Project Overview
 
- PROBLEM STATEMENT
+Many small and medium-sized businesses still rely on manual methods such as notebooks, spreadsheets, or verbal reporting to manage inventory and sales. These approaches are inefficient, error-prone, and do not support real-time visibility into business performance.
 
-Many businesses rely on manual record keeping, which is:
+MYDUKA provides a digital alternative that streamlines inventory workflows, tracks supplier payments, enforces accountability through role-based access control, and generates actionable business insights through real-time reports and visual analytics. The system is designed to be scalable, secure, and easy to use across multiple stores.
 
-Time-consuming
+Problem Statement
 
-Error-prone
+Manual inventory and sales record keeping presents several challenges:
 
-Lacking real-time reporting
+Time-consuming data entry and reconciliation
 
-These challenges often result in:
+High likelihood of human errors
 
-Poor business decisions
+Lack of real-time reporting and analytics
 
-Stock losses
+These challenges often lead to:
 
-Delayed procurement and payments
+Poor and delayed business decisions
 
-  SOLUTION
+Stock losses due to inaccurate records
 
-MyDuka addresses these challenges by offering:
+Delayed procurement and supplier payments
 
-Centralized inventory management
+Reduced accountability among staff
 
-Role-based dashboards
+Proposed Solution
+
+MYDUKA addresses these challenges by providing a centralized, automated platform that offers:
+
+Digital inventory management across multiple stores
+
+Role-based dashboards for controlled access and accountability
 
 Automated reports (weekly, monthly, yearly)
 
-Supplier payment tracking
+Supplier payment tracking and status monitoring
 
-Visual analytics using charts and graphs
+Visual analytics using charts and graphs for quick insights
 
- User Roles & Permissions
- Merchant (Superuser)
+Project Objectives
+
+The primary objectives of MYDUKA are to:
+
+Digitize inventory and sales management for SMEs
+
+Reduce inventory errors and stock losses
+
+Improve accountability through role-based access control
+
+Provide real-time business performance insights
+
+Support informed decision-making using automated reports and analytics
+
+User Roles & Permissions
+1. Merchant (Superuser)
+
+Responsibilities:
 
 Initialize admin registration via tokenized email links
 
-Activate, deactivate, or delete admin accounts
+Activate, deactivate, or delete store admin accounts
 
-    View:
+Access & Views:
 
 Store-by-store performance reports
 
 Paid vs unpaid products per store
 
-Individual product performance
+Individual product performance analytics
 
-Graphical analytics dashboards
+Graphical dashboards showing overall business performance
 
- Store Admin
+2. Store Admin
+
+Responsibilities:
 
 Register and manage data entry clerks
 
-Approve or decline supply requests
+Approve or decline stock supply requests
 
 Update supplier payment status
 
-View:
+Access & Views:
 
 Clerk performance reports
 
 Paid vs unpaid supplier products
 
-Deactivate or delete clerks
+Ability to deactivate or delete clerks
 
-  Data Entry Clerk
+3. Data Entry Clerk
 
-Record:
+Responsibilities:
 
-Items received
+Record received items
 
-Items in stock
+Update items in stock
 
-Spoilt items (expired or damaged)
+Record spoilt or expired items
 
-Buying and selling prices
+Enter buying and selling prices
 
-  Payment status
+Update payment status
 
-Request additional stock supply from store admin
+Request additional stock from the store admin
 
- Core Features
+Core Features
 
-JWT authentication (Access & Refresh tokens)
+JWT-based authentication (Access & Refresh tokens)
 
-Role-based access control (RBAC)
+Role-Based Access Control (RBAC)
 
 Token-based email registration
 
 Inventory CRUD operations
 
-Supply request workflow
+Supply request and approval workflow
 
 Supplier payment tracking
 
-Graphical reports (bar, line, and optional pie charts)
+Automated reports (weekly, monthly, yearly)
+
+Visual analytics (bar, line, optional pie charts)
 
 Pagination on all listing endpoints
 
-CI/CD pipeline with GitHub Actions
+CI/CD pipeline using GitHub Actions
 
 Automated frontend and backend testing
 
-  Technology Stack
+Non-Functional Requirements
+
+Security: JWT authentication, encrypted passwords, RBAC enforcement
+
+Performance: Fast API response times and optimized database queries
+
+Scalability: Support for multiple stores and growing data volumes
+
+Availability: Reliable deployment with minimal downtime
+
+Maintainability: Clean architecture, automated testing, and CI/CD pipelines
+
+System Architecture Overview
+
+Frontend: React application communicates with the backend via REST APIs
+
+Backend: FastAPI handles authentication, business logic, and reporting
+
+Database: PostgreSQL stores inventory, user, and transaction data
+
+Authentication Flow: JWT access tokens with refresh token rotation
+
+Reporting: Aggregated queries generate reports and analytics in real time
+
+Technology Stack
 Backend (API)
 Purpose	Technology
 Framework	FastAPI
@@ -122,7 +172,7 @@ ORM	SQLAlchemy
 Migrations	Alembic
 Email Service	SMTP / SendGrid
 Testing	Pytest
-API Docs	Swagger (Auto-generated)
+API Documentation	Swagger (Auto-generated)
 
 Why FastAPI?
 
@@ -146,11 +196,12 @@ API Handling	Axios with JWT Interceptors
 Testing	Jest & React Testing Library
 
 Why Redux Toolkit?
- Cleaner and scalable state management
+
+Cleaner and scalable state management
 
 Excellent debugging tools
 
-Suitable for complex dashboards
+Ideal for complex dashboards and analytics
 
 DevOps & Workflow
 
@@ -158,17 +209,32 @@ Gitflow branching strategy
 
 GitHub Actions for CI/CD
 
-Automated:
+Automated Processes:
 
-Tests
+Code linting
 
-Linting
+Unit and integration tests
 
-Build checks
+Build and deployment checks
 
-Deployment:
+Deployment Targets:
 
 Frontend → Vercel
 
-Backend → Render / Railway
+Backend → Render or Railway
 
+Future Enhancements
+
+Mobile application support
+
+POS system integration
+
+Multi-currency and tax support
+
+Advanced analytics and forecasting
+
+Role-based notifications and alerts
+
+Conclusion
+
+MYDUKA provides a comprehensive, secure, and scalable solution for inventory and sales management tailored to the needs of small and medium-sized businesses. By digitizing manual workflows and delivering real-time insights through analytics and reports, the system empowers business owners to make informed decisions, reduce losses, and improve operational efficiency.
