@@ -316,45 +316,45 @@ export default function Dashboard() {
       label: "Total Products",
       value: dashboard.stats.total_products,
       icon: <Box className="h-5 w-5" />,
-      color: "text-cyan-300",
+      color: "text-[#15803D]",
     },
     {
       label: "Total Stock",
       value: dashboard.stats.total_stock,
       icon: <TrendingUp className="h-5 w-5" />,
-      color: "text-emerald-300",
+      color: "text-[#15803D]",
     },
     {
       label: "Spoilt Items",
       value: dashboard.stats.spoilt_items,
       icon: <AlertTriangle className="h-5 w-5" />,
-      color: "text-amber-300",
+      color: "text-[#DC2626]",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#0F172A]">
-      <header className="border-b border-[#223355] bg-[#111D36]">
+    <div className="min-h-screen bg-[#F0FDF4]">
+      <header className="border-b border-[#D1FAE5] bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#63C2B0] font-bold text-[#0F172A]">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#34D399] font-bold text-[#064E3B]">
               M
             </div>
             <div>
-              <h1 className="text-base font-semibold text-[#E2E8F0]">MyDuka</h1>
-              <p className="text-xs text-[#E2E8F0]/70">Data Entry Clerk Dashboard</p>
+              <h1 className="text-base font-semibold text-[#064E3B]">MyDuka</h1>
+              <p className="text-xs text-[#6B7280]">Data Entry Clerk Dashboard</p>
             </div>
           </div>
           <div className="flex items-center gap-4 text-sm">
             <div className="text-right">
-              <p className="font-medium text-[#E2E8F0]">
+              <p className="font-medium text-[#064E3B]">
                 {currentUser ? `${currentUser.first_name} ${currentUser.last_name}` : "Clerk User"}
               </p>
-              <p className="text-xs text-[#E2E8F0]/70">Clerk</p>
+              <p className="text-xs text-[#6B7280]">Clerk</p>
             </div>
             <button
               onClick={handleLogout}
-              className="rounded-full border border-[#2B3D63] p-2 text-[#E2E8F0]/70 hover:bg-[#1A2947] hover:text-[#E2E8F0]"
+              className="rounded-full border border-[#D1FAE5] p-2 text-[#6B7280] hover:bg-[#D1FAE5] hover:text-[#064E3B]"
               aria-label="Log out"
             >
               <LogOut className="h-4 w-4" />
@@ -365,30 +365,30 @@ export default function Dashboard() {
 
       <main className="mx-auto max-w-6xl px-6 py-8">
         {loading ? (
-          <div className="mb-6 flex items-center gap-2 rounded-xl border border-[#223355] bg-[#111D36] px-4 py-3 text-sm text-[#E2E8F0]/80">
-            <Loader2 className="h-4 w-4 animate-spin text-[#63C2B0]" />
+          <div className="mb-6 flex items-center gap-2 rounded-xl border border-[#D1FAE5] bg-white px-4 py-3 text-sm text-[#6B7280]">
+            <Loader2 className="h-4 w-4 animate-spin text-[#34D399]" />
             Loading clerk dashboard...
           </div>
         ) : null}
         {error ? (
-          <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          <div className="mb-6 rounded-xl border border-[#DC2626]/30 bg-[#DC2626]/10 px-4 py-3 text-sm text-[#DC2626]">
             {error}
           </div>
         ) : null}
         {message ? (
-          <div className="mb-6 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+          <div className="mb-6 rounded-xl border border-[#D1FAE5] bg-[#D1FAE5] px-4 py-3 text-sm text-[#15803D]">
             {message}
           </div>
         ) : null}
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {stats.map((stat) => (
-            <div key={stat.label} className="rounded-xl border border-[#223355] bg-[#111D36] p-4 shadow-sm">
+            <div key={stat.label} className="rounded-xl border border-[#D1FAE5] bg-white p-4 shadow-sm">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-[#E2E8F0]/70">{stat.label}</p>
-                <span className={`rounded-lg bg-[#1A2947] p-2 ${stat.color}`}>{stat.icon}</span>
+                <p className="text-sm text-[#6B7280]">{stat.label}</p>
+                <span className={`rounded-lg bg-[#D1FAE5] p-2 ${stat.color}`}>{stat.icon}</span>
               </div>
-              <p className="mt-2 text-2xl font-semibold text-[#E2E8F0]">{stat.value}</p>
+              <p className="mt-2 text-2xl font-semibold text-[#064E3B]">{stat.value}</p>
             </div>
           ))}
         </div>
@@ -398,8 +398,8 @@ export default function Dashboard() {
             onClick={() => setActiveForm("record")}
             className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition ${
               activeForm === "record"
-                ? "bg-[#2563EB] text-white"
-                : "bg-[#1A2947] text-[#E2E8F0]/80 hover:bg-[#223355]"
+                ? "bg-[#15803D] text-white"
+                : "bg-[#D1FAE5] text-[#6B7280] hover:bg-[#D1FAE5]"
             }`}
           >
             <PackagePlus className="h-4 w-4" />
@@ -409,8 +409,8 @@ export default function Dashboard() {
             onClick={() => setActiveForm("request")}
             className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition ${
               activeForm === "request"
-                ? "bg-[#059669] text-white"
-                : "bg-[#1A2947] text-[#E2E8F0]/80 hover:bg-[#223355]"
+                ? "bg-[#15803D] text-white"
+                : "bg-[#D1FAE5] text-[#6B7280] hover:bg-[#D1FAE5]"
             }`}
           >
             <Send className="h-4 w-4" />
@@ -418,7 +418,7 @@ export default function Dashboard() {
           </button>
         </div>
 
-        <div className="mt-6 rounded-xl border border-[#223355] bg-[#111D36] p-6">
+        <div className="mt-6 rounded-xl border border-[#D1FAE5] bg-white p-6">
           {activeForm === "record" ? (
             <form onSubmit={handleRecordSubmit} className="grid grid-cols-1 gap-3 md:grid-cols-3">
               <FieldLabel label="Product">
@@ -426,7 +426,7 @@ export default function Dashboard() {
                   placeholder="e.g. Rice - 5kg"
                   value={recordForm.product_name}
                   onChange={(e) => setRecordForm((prev) => ({ ...prev, product_name: e.target.value }))}
-                  className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+                  className="rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-sm"
                   required
                 />
               </FieldLabel>
@@ -435,7 +435,7 @@ export default function Dashboard() {
                   placeholder="e.g. Grains"
                   value={recordForm.category}
                   onChange={(e) => setRecordForm((prev) => ({ ...prev, category: e.target.value }))}
-                  className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+                  className="rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-sm"
                 />
               </FieldLabel>
               <FieldLabel label="Quantity Received">
@@ -445,7 +445,7 @@ export default function Dashboard() {
                   min="0"
                   value={recordForm.quantity_received}
                   onChange={(e) => setRecordForm((prev) => ({ ...prev, quantity_received: e.target.value }))}
-                  className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+                  className="rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-sm"
                   required
                 />
               </FieldLabel>
@@ -456,7 +456,7 @@ export default function Dashboard() {
                   min="0"
                   value={recordForm.quantity_in_stock}
                   onChange={(e) => setRecordForm((prev) => ({ ...prev, quantity_in_stock: e.target.value }))}
-                  className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+                  className="rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-sm"
                   required
                 />
               </FieldLabel>
@@ -467,7 +467,7 @@ export default function Dashboard() {
                   min="0"
                   value={recordForm.quantity_spoilt}
                   onChange={(e) => setRecordForm((prev) => ({ ...prev, quantity_spoilt: e.target.value }))}
-                  className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+                  className="rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-sm"
                 />
               </FieldLabel>
               <FieldLabel label="Buying Price">
@@ -477,7 +477,7 @@ export default function Dashboard() {
                   min="1"
                   value={recordForm.buying_price}
                   onChange={(e) => setRecordForm((prev) => ({ ...prev, buying_price: e.target.value }))}
-                  className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+                  className="rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-sm"
                   required
                 />
               </FieldLabel>
@@ -488,7 +488,7 @@ export default function Dashboard() {
                   min="1"
                   value={recordForm.selling_price}
                   onChange={(e) => setRecordForm((prev) => ({ ...prev, selling_price: e.target.value }))}
-                  className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+                  className="rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-sm"
                   required
                 />
               </FieldLabel>
@@ -496,7 +496,7 @@ export default function Dashboard() {
                 <select
                   value={recordForm.payment_status}
                   onChange={(e) => setRecordForm((prev) => ({ ...prev, payment_status: e.target.value }))}
-                  className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+                  className="rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-sm"
                 >
                   <option value="paid">Paid</option>
                   <option value="unpaid">Unpaid</option>
@@ -507,13 +507,13 @@ export default function Dashboard() {
                   placeholder="Any note for this inventory entry"
                   value={recordForm.remarks}
                   onChange={(e) => setRecordForm((prev) => ({ ...prev, remarks: e.target.value }))}
-                  className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+                  className="rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-sm"
                 />
               </FieldLabel>
               <button
                 type="submit"
                 disabled={busy}
-                className="rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-semibold text-white"
+                className="rounded-lg bg-[#15803D] px-4 py-2 text-sm font-semibold text-white"
               >
                 {busy ? "Saving..." : editingInventoryId ? "Update Inventory" : "Record Inventory"}
               </button>
@@ -524,7 +524,7 @@ export default function Dashboard() {
                 <select
                   value={supplyForm.product_id}
                   onChange={(e) => setSupplyForm((prev) => ({ ...prev, product_id: e.target.value }))}
-                  className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+                  className="rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-sm"
                   required
                 >
                   <option value="">Select product</option>
@@ -542,7 +542,7 @@ export default function Dashboard() {
                   min="1"
                   value={supplyForm.quantity_requested}
                   onChange={(e) => setSupplyForm((prev) => ({ ...prev, quantity_requested: e.target.value }))}
-                  className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+                  className="rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-sm"
                   required
                 />
               </FieldLabel>
@@ -551,14 +551,14 @@ export default function Dashboard() {
                   placeholder="Why restock is needed"
                   value={supplyForm.reason}
                   onChange={(e) => setSupplyForm((prev) => ({ ...prev, reason: e.target.value }))}
-                  className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+                  className="rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-sm"
                   required
                 />
               </FieldLabel>
               <button
                 type="submit"
                 disabled={busy}
-                className="rounded-lg bg-[#059669] px-4 py-2 text-sm font-semibold text-white md:col-span-3"
+                className="rounded-lg bg-[#15803D] px-4 py-2 text-sm font-semibold text-white md:col-span-3"
               >
                 {busy ? "Submitting..." : "Submit Supply Request"}
               </button>
@@ -566,17 +566,17 @@ export default function Dashboard() {
           )}
         </div>
 
-        <section className="mt-8 rounded-xl border border-[#223355] bg-[#111D36] shadow-sm">
-          <div className="border-b border-[#223355] px-6 py-4">
-            <h2 className="text-base font-semibold text-[#E2E8F0]">My Supply Requests</h2>
+        <section className="mt-8 rounded-xl border border-[#D1FAE5] bg-white shadow-sm">
+          <div className="border-b border-[#D1FAE5] px-6 py-4">
+            <h2 className="text-base font-semibold text-[#064E3B]">My Supply Requests</h2>
           </div>
           <div className="overflow-x-auto px-6 py-4">
             {myRequests.length === 0 ? (
-              <p className="text-sm text-[#E2E8F0]/65">No supply requests submitted yet.</p>
+              <p className="text-sm text-[#6B7280]">No supply requests submitted yet.</p>
             ) : (
               <table className="w-full min-w-[680px] text-sm">
                 <thead>
-                  <tr className="text-left text-xs uppercase text-[#E2E8F0]/60">
+                  <tr className="text-left text-xs uppercase text-[#6B7280]">
                     <th className="py-2">Request ID</th>
                     <th className="py-2">Product ID</th>
                     <th className="py-2">Quantity</th>
@@ -586,14 +586,14 @@ export default function Dashboard() {
                 </thead>
                 <tbody>
                   {myRequests.slice(0, 5).map((request) => (
-                    <tr key={request.id} className="border-t border-[#223355]">
+                    <tr key={request.id} className="border-t border-[#D1FAE5]">
                       <td className="py-2">#{request.id}</td>
                       <td className="py-2">{request.product_id}</td>
                       <td className="py-2">{request.quantity_requested}</td>
                       <td className="py-2">
                         <StatusBadge status={request.status?.charAt(0).toUpperCase() + request.status?.slice(1)} />
                       </td>
-                      <td className="py-2 text-[#E2E8F0]/70">{request.admin_notes || request.reason || "-"}</td>
+                      <td className="py-2 text-[#6B7280]">{request.admin_notes || request.reason || "-"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -602,20 +602,20 @@ export default function Dashboard() {
           </div>
         </section>
 
-        <section className="mt-8 rounded-xl border border-[#223355] bg-[#111D36] shadow-sm">
-          <div className="flex items-center justify-between border-b border-[#223355] px-6 py-4">
-            <h2 className="text-base font-semibold text-[#E2E8F0]">My Recorded Products</h2>
+        <section className="mt-8 rounded-xl border border-[#D1FAE5] bg-white shadow-sm">
+          <div className="flex items-center justify-between border-b border-[#D1FAE5] px-6 py-4">
+            <h2 className="text-base font-semibold text-[#064E3B]">My Recorded Products</h2>
             <input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search product"
-              className="w-56 rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-1.5 text-xs"
+              className="w-56 rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-1.5 text-xs"
             />
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[980px] text-sm">
               <thead>
-                <tr className="text-left text-xs uppercase text-[#E2E8F0]/60">
+                <tr className="text-left text-xs uppercase text-[#6B7280]">
                   <th className="px-6 py-3">Product</th>
                   <th className="px-6 py-3">Category</th>
                   <th className="px-6 py-3">Stock</th>
@@ -630,22 +630,22 @@ export default function Dashboard() {
               <tbody>
                 {pagedProducts.length === 0 ? (
                   <tr>
-                    <td className="px-6 py-6 text-[#E2E8F0]/65" colSpan={9}>
+                    <td className="px-6 py-6 text-[#6B7280]" colSpan={9}>
                       No recorded inventory yet.
                     </td>
                   </tr>
                 ) : (
                   pagedProducts.map((item) => (
-                    <tr key={item.inventory_id} className="border-t border-[#223355]">
-                      <td className="px-6 py-4 font-medium text-[#E2E8F0]">{item.product}</td>
-                      <td className="px-6 py-4 text-[#E2E8F0]/70">{item.category || "-"}</td>
-                      <td className="px-6 py-4 text-[#E2E8F0]">{item.stock}</td>
+                    <tr key={item.inventory_id} className="border-t border-[#D1FAE5]">
+                      <td className="px-6 py-4 font-medium text-[#064E3B]">{item.product}</td>
+                      <td className="px-6 py-4 text-[#6B7280]">{item.category || "-"}</td>
+                      <td className="px-6 py-4 text-[#064E3B]">{item.stock}</td>
                       <td className="px-6 py-4">
                         <StatusBadge status={getInventoryStatus(item.stock)} />
                       </td>
-                      <td className="px-6 py-4 text-[#E2E8F0]">{item.spoil}</td>
-                      <td className="px-6 py-4 text-[#E2E8F0]">{formatCurrency(item.buy_price)}</td>
-                      <td className="px-6 py-4 text-[#E2E8F0]">{formatCurrency(item.sell_price)}</td>
+                      <td className="px-6 py-4 text-[#064E3B]">{item.spoil}</td>
+                      <td className="px-6 py-4 text-[#064E3B]">{formatCurrency(item.buy_price)}</td>
+                      <td className="px-6 py-4 text-[#064E3B]">{formatCurrency(item.sell_price)}</td>
                       <td className="px-6 py-4">
                         <StatusBadge status={item.payment_status} />
                       </td>
@@ -653,14 +653,14 @@ export default function Dashboard() {
                         <div className="flex gap-2">
                           <button
                             onClick={() => handleEditInventory(item)}
-                            className="rounded bg-[#1A2947] p-1.5 text-[#93C5FD]"
+                            className="rounded bg-[#D1FAE5] p-1.5 text-[#15803D]"
                             aria-label="Edit inventory"
                           >
                             <Pencil className="h-3.5 w-3.5" />
                           </button>
                           <button
                             onClick={() => handleDeleteInventory(item.inventory_id)}
-                            className="rounded bg-rose-500/20 p-1.5 text-rose-200"
+                            className="rounded bg-[#DC2626]/10 p-1.5 text-[#DC2626]"
                             aria-label="Delete inventory"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -673,7 +673,7 @@ export default function Dashboard() {
               </tbody>
             </table>
           </div>
-          <div className="flex items-center justify-between border-t border-[#223355] px-6 py-3 text-xs text-[#E2E8F0]/70">
+          <div className="flex items-center justify-between border-t border-[#D1FAE5] px-6 py-3 text-xs text-[#6B7280]">
             <span>
               Page {page} of {totalPages}
             </span>
@@ -681,14 +681,14 @@ export default function Dashboard() {
               <button
                 onClick={() => setPage((prev) => Math.max(1, prev - 1))}
                 disabled={page === 1}
-                className="rounded border border-[#223355] px-2 py-1 disabled:opacity-40"
+                className="rounded border border-[#D1FAE5] px-2 py-1 disabled:opacity-40"
               >
                 Prev
               </button>
               <button
                 onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
                 disabled={page >= totalPages}
-                className="rounded border border-[#223355] px-2 py-1 disabled:opacity-40"
+                className="rounded border border-[#D1FAE5] px-2 py-1 disabled:opacity-40"
               >
                 Next
               </button>
@@ -702,7 +702,7 @@ export default function Dashboard() {
 
 function FieldLabel({ label, className = "", children }) {
   return (
-    <label className={`flex flex-col gap-1 text-xs text-[#E2E8F0]/70 ${className}`}>
+    <label className={`flex flex-col gap-1 text-xs text-[#6B7280] ${className}`}>
       <span>{label}</span>
       {children}
     </label>
@@ -711,17 +711,17 @@ function FieldLabel({ label, className = "", children }) {
 
 function StatusBadge({ status }) {
   const styles = {
-    "In Stock": "bg-emerald-300/20 text-emerald-200",
-    "Low Stock": "bg-amber-300/20 text-amber-200",
-    "Out of Stock": "bg-rose-300/20 text-rose-200",
-    Paid: "bg-emerald-300/20 text-emerald-200",
-    Unpaid: "bg-rose-300/20 text-rose-200",
-    Pending: "bg-amber-300/20 text-amber-200",
-    Approved: "bg-emerald-300/20 text-emerald-200",
-    Declined: "bg-rose-300/20 text-rose-200",
+    "In Stock": "bg-[#D1FAE5] text-[#15803D]",
+    "Low Stock": "bg-[#DC2626]/10 text-[#DC2626]",
+    "Out of Stock": "bg-[#DC2626]/10 text-[#DC2626]",
+    Paid: "bg-[#D1FAE5] text-[#15803D]",
+    Unpaid: "bg-[#DC2626]/10 text-[#DC2626]",
+    Pending: "bg-[#D1FAE5] text-[#6B7280]",
+    Approved: "bg-[#D1FAE5] text-[#15803D]",
+    Declined: "bg-[#DC2626]/10 text-[#DC2626]",
   };
   return (
-    <span className={`rounded-full px-3 py-1 text-xs font-medium ${styles[status] || "bg-[#1A2947] text-[#E2E8F0]/80"}`}>
+    <span className={`rounded-full px-3 py-1 text-xs font-medium ${styles[status] || "bg-[#D1FAE5] text-[#6B7280]"}`}>
       {status}
     </span>
   );

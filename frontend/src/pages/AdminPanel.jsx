@@ -13,7 +13,7 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   getStoredUser,
   inventoryApi,
@@ -37,6 +37,15 @@ const EMPTY_DASHBOARD = {
 };
 
 const PAGE_SIZE = 6;
+const QUICK_LINKS = [
+  { label: "Suppliers", to: "/suppliers" },
+  { label: "Purchase Orders", to: "/purchase-orders" },
+  { label: "Transfers", to: "/transfers" },
+  { label: "Returns", to: "/returns" },
+  { label: "Sales", to: "/sales" },
+  { label: "Expenses", to: "/expenses" },
+  { label: "Reporting", to: "/analytics" },
+];
 
 const formatCurrency = (amount) =>
   new Intl.NumberFormat("en-KE", {
@@ -258,31 +267,31 @@ export default function AdminPanel() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0F172A]">
-      <header className="border-b border-[#1E293B] bg-[#111D36]">
+    <div className="min-h-screen bg-[#F0FDF4]">
+      <header className="border-b border-[#D1FAE5] bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#63C2B0] font-bold text-[#0F172A]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#34D399] font-bold text-[#064E3B]">
               M
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wide text-[#63C2B0]">MyDuka</p>
-              <h1 className="text-xl font-semibold text-[#E2E8F0]">Admin Dashboard</h1>
+              <p className="text-xs uppercase tracking-wide text-[#34D399]">MyDuka</p>
+              <h1 className="text-xl font-semibold text-[#064E3B]">Admin Dashboard</h1>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <button className="relative rounded-full border border-[#2B3D63] p-2 text-[#E2E8F0]/70 hover:text-[#E2E8F0]">
+            <button className="relative rounded-full border border-[#D1FAE5] p-2 text-[#6B7280] hover:text-[#064E3B]">
               <Bell className="h-5 w-5" />
             </button>
             <div className="text-right">
-              <p className="text-sm font-medium text-[#E2E8F0]">
+              <p className="text-sm font-medium text-[#064E3B]">
                 {currentUser ? `${currentUser.first_name} ${currentUser.last_name}` : "Admin User"}
               </p>
-              <p className="text-xs text-[#E2E8F0]/60">Admin</p>
+              <p className="text-xs text-[#6B7280]">Admin</p>
             </div>
             <button
               onClick={handleLogout}
-              className="rounded-lg border border-[#2B3D63] p-2 text-[#E2E8F0]/70 hover:bg-[#1E293B] hover:text-[#E2E8F0]"
+              className="rounded-lg border border-[#D1FAE5] p-2 text-[#6B7280] hover:bg-white hover:text-[#064E3B]"
               aria-label="Log out"
             >
               <LogOut className="h-5 w-5" />
@@ -291,34 +300,46 @@ export default function AdminPanel() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-6 py-8 text-[#E2E8F0]">
+      <main className="mx-auto max-w-6xl px-6 py-8 text-[#064E3B]">
         {loading ? (
-          <div className="flex items-center gap-2 rounded-xl border border-[#223355] bg-[#111D36] px-4 py-3 text-sm">
-            <Loader2 className="h-4 w-4 animate-spin text-[#63C2B0]" />
+          <div className="flex items-center gap-2 rounded-xl border border-[#D1FAE5] bg-white px-4 py-3 text-sm">
+            <Loader2 className="h-4 w-4 animate-spin text-[#34D399]" />
             Loading admin data...
           </div>
         ) : null}
         {error ? (
-          <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          <div className="mb-6 rounded-xl border border-[#DC2626]/30 bg-[#DC2626]/10 px-4 py-3 text-sm text-[#DC2626]">
             {error}
           </div>
         ) : null}
         {message ? (
-          <div className="mb-6 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+          <div className="mb-6 rounded-xl border border-[#D1FAE5] bg-[#D1FAE5] px-4 py-3 text-sm text-[#15803D]">
             {message}
           </div>
         ) : null}
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
           {statsCards.map((card) => (
-            <div key={card.title} className="rounded-xl border border-[#223355] bg-[#111D36] p-4 shadow-sm">
+            <div key={card.title} className="rounded-xl border border-[#D1FAE5] bg-white p-4 shadow-sm">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-[#E2E8F0]/70">{card.title}</p>
-                <span className="rounded-lg bg-[#1A2947] p-2 text-[#63C2B0]">{card.icon}</span>
+                <p className="text-sm text-[#6B7280]">{card.title}</p>
+                <span className="rounded-lg bg-[#D1FAE5] p-2 text-[#34D399]">{card.icon}</span>
               </div>
-              <p className="mt-2 text-2xl font-semibold text-[#E2E8F0]">{card.value}</p>
-              <p className="mt-1 text-xs text-[#E2E8F0]/60">{card.trend}</p>
+              <p className="mt-2 text-2xl font-semibold text-[#064E3B]">{card.value}</p>
+              <p className="mt-1 text-xs text-[#6B7280]">{card.trend}</p>
             </div>
+          ))}
+        </div>
+
+        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+          {QUICK_LINKS.map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              className="rounded-lg border border-[#D1FAE5] bg-white px-3 py-2 text-xs text-[#6B7280] hover:bg-[#D1FAE5] hover:text-[#064E3B]"
+            >
+              {link.label}
+            </Link>
           ))}
         </div>
 
@@ -328,14 +349,14 @@ export default function AdminPanel() {
               placeholder="First name"
               value={clerkForm.first_name}
               onChange={(e) => setClerkForm((prev) => ({ ...prev, first_name: e.target.value }))}
-              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+              className="rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-sm"
               required
             />
             <input
               placeholder="Last name"
               value={clerkForm.last_name}
               onChange={(e) => setClerkForm((prev) => ({ ...prev, last_name: e.target.value }))}
-              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+              className="rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-sm"
               required
             />
             <input
@@ -343,21 +364,21 @@ export default function AdminPanel() {
               placeholder="clerk@myduka.com"
               value={clerkForm.email}
               onChange={(e) => setClerkForm((prev) => ({ ...prev, email: e.target.value }))}
-              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+              className="rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-sm"
               required
             />
             <input
               placeholder="Password"
               value={clerkForm.password}
               onChange={(e) => setClerkForm((prev) => ({ ...prev, password: e.target.value }))}
-              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-sm"
+              className="rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-sm"
               minLength={8}
               required
             />
             <button
               type="submit"
               disabled={busyId === "create-clerk"}
-              className="md:col-span-4 inline-flex items-center justify-center gap-2 rounded-lg bg-[#2563EB] px-4 py-2 text-sm font-semibold text-white"
+              className="md:col-span-4 inline-flex items-center justify-center gap-2 rounded-lg bg-[#15803D] px-4 py-2 text-sm font-semibold text-white"
             >
               <UserPlus className="h-4 w-4" />
               {busyId === "create-clerk" ? "Creating..." : "Create Clerk"}
@@ -371,12 +392,12 @@ export default function AdminPanel() {
               value={requestSearch}
               onChange={(e) => setRequestSearch(e.target.value)}
               placeholder="Search product/clerk"
-              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-xs"
+              className="rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-xs"
             />
             <select
               value={requestFilter}
               onChange={(e) => setRequestFilter(e.target.value)}
-              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-xs"
+              className="rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-xs"
             >
               <option>All</option>
               <option>Pending</option>
@@ -388,7 +409,7 @@ export default function AdminPanel() {
             headers={["Product", "Quantity", "Requested By", "Date", "Notes", "Status", "Actions"]}
             rows={pagedSupply}
             renderRow={(item) => (
-              <tr key={item.id} className="border-t border-[#223355]">
+              <tr key={item.id} className="border-t border-[#D1FAE5]">
                 <td className="py-3">{item.product}</td>
                 <td className="py-3">{item.quantity}</td>
                 <td className="py-3">{item.requested_by}</td>
@@ -403,20 +424,20 @@ export default function AdminPanel() {
                       <button
                         onClick={() => handleRequestStatus(item.id, "approve")}
                         disabled={busyId === `request-${item.id}`}
-                        className="rounded bg-emerald-500/20 px-2 py-1 text-xs text-emerald-200"
+                        className="rounded bg-[#D1FAE5] px-2 py-1 text-xs text-[#15803D]"
                       >
                         Approve
                       </button>
                       <button
                         onClick={() => handleRequestStatus(item.id, "decline")}
                         disabled={busyId === `request-${item.id}`}
-                        className="rounded bg-rose-500/20 px-2 py-1 text-xs text-rose-200"
+                        className="rounded bg-[#DC2626]/10 px-2 py-1 text-xs text-[#DC2626]"
                       >
                         Decline
                       </button>
                     </div>
                   ) : (
-                    <span className="text-xs text-[#E2E8F0]/60">No action</span>
+                    <span className="text-xs text-[#6B7280]">No action</span>
                   )}
                 </td>
               </tr>
@@ -431,7 +452,7 @@ export default function AdminPanel() {
             <select
               value={paymentFilter}
               onChange={(e) => setPaymentFilter(e.target.value)}
-              className="rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-xs"
+              className="rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-xs"
             >
               <option>All</option>
               <option>Paid</option>
@@ -442,7 +463,7 @@ export default function AdminPanel() {
             headers={["Product", "Stock", "Buy Price", "Payment Status", "Actions"]}
             rows={pagedPayments}
             renderRow={(item) => (
-              <tr key={item.inventory_id} className="border-t border-[#223355]">
+              <tr key={item.inventory_id} className="border-t border-[#D1FAE5]">
                 <td className="py-3">{item.product}</td>
                 <td className="py-3">{item.stock}</td>
                 <td className="py-3">{formatCurrency(item.buy_price)}</td>
@@ -453,7 +474,7 @@ export default function AdminPanel() {
                   <button
                     onClick={() => handleTogglePayment(item)}
                     disabled={busyId === `payment-${item.inventory_id}`}
-                    className="rounded bg-[#2563EB]/20 px-2 py-1 text-xs text-[#93C5FD]"
+                    className="rounded bg-[#D1FAE5] px-2 py-1 text-xs text-[#15803D]"
                   >
                     Toggle Status
                   </button>
@@ -471,16 +492,16 @@ export default function AdminPanel() {
               value={clerkSearch}
               onChange={(e) => setClerkSearch(e.target.value)}
               placeholder="Search clerk name or email"
-              className="w-full rounded-lg border border-[#223355] bg-[#0F172A] px-3 py-2 text-xs md:w-80"
+              className="w-full rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-xs md:w-80"
             />
           </div>
           <DataTable
             headers={["Name", "Email", "Joined", "Status", "Actions"]}
             rows={pagedClerks}
             renderRow={(item) => (
-              <tr key={item.id} className="border-t border-[#223355]">
+              <tr key={item.id} className="border-t border-[#D1FAE5]">
                 <td className="py-3">{item.name}</td>
-                <td className="py-3 text-[#E2E8F0]/70">{item.email}</td>
+                <td className="py-3 text-[#6B7280]">{item.email}</td>
                 <td className="py-3">{formatDate(item.joined_date)}</td>
                 <td className="py-3">
                   <StatusBadge status={item.status} />
@@ -491,7 +512,7 @@ export default function AdminPanel() {
                       <button
                         onClick={() => handleClerkStatus(item, false)}
                         disabled={busyId === `clerk-${item.id}`}
-                        className="rounded bg-rose-500/20 px-2 py-1 text-xs text-rose-200"
+                        className="rounded bg-[#DC2626]/10 px-2 py-1 text-xs text-[#DC2626]"
                       >
                         Deactivate
                       </button>
@@ -499,7 +520,7 @@ export default function AdminPanel() {
                       <button
                         onClick={() => handleClerkStatus(item, true)}
                         disabled={busyId === `clerk-${item.id}`}
-                        className="rounded bg-emerald-500/20 px-2 py-1 text-xs text-emerald-200"
+                        className="rounded bg-[#D1FAE5] px-2 py-1 text-xs text-[#15803D]"
                       >
                         Activate
                       </button>
@@ -507,7 +528,7 @@ export default function AdminPanel() {
                     <button
                       onClick={() => handleDeleteClerk(item)}
                       disabled={busyId === `delete-${item.id}`}
-                      className="rounded bg-amber-500/20 px-2 py-1 text-xs text-amber-200"
+                      className="rounded bg-[#DC2626]/10 px-2 py-1 text-xs text-[#DC2626]"
                     >
                       Delete
                     </button>
@@ -525,7 +546,7 @@ export default function AdminPanel() {
             headers={["Clerk", "Recorded Entries", "Stock Recorded", "Spoilt Recorded"]}
             rows={dashboard.clerk_performance}
             renderRow={(item) => (
-              <tr key={item.clerk_id} className="border-t border-[#223355]">
+              <tr key={item.clerk_id} className="border-t border-[#D1FAE5]">
                 <td className="py-3">{item.name}</td>
                 <td className="py-3">{item.recorded_items}</td>
                 <td className="py-3">{item.total_stock_recorded}</td>
@@ -542,9 +563,9 @@ export default function AdminPanel() {
 
 function Section({ title, subtitle, children }) {
   return (
-    <section className="mt-8 rounded-xl border border-[#223355] bg-[#111D36] p-5">
-      <h2 className="text-lg font-semibold text-[#E2E8F0]">{title}</h2>
-      <p className="mt-1 text-sm text-[#E2E8F0]/65">{subtitle}</p>
+    <section className="mt-8 rounded-xl border border-[#D1FAE5] bg-white p-5">
+      <h2 className="text-lg font-semibold text-[#064E3B]">{title}</h2>
+      <p className="mt-1 text-sm text-[#6B7280]">{subtitle}</p>
       <div className="mt-4">{children}</div>
     </section>
   );
@@ -555,7 +576,7 @@ function DataTable({ headers, rows, renderRow, emptyMessage }) {
     <div className="overflow-x-auto">
       <table className="w-full min-w-[680px] text-sm">
         <thead>
-          <tr className="text-left text-xs uppercase tracking-wide text-[#E2E8F0]/55">
+          <tr className="text-left text-xs uppercase tracking-wide text-[#6B7280]">
             {headers.map((header) => (
               <th key={header} className="pb-3 pr-4">
                 {header}
@@ -566,7 +587,7 @@ function DataTable({ headers, rows, renderRow, emptyMessage }) {
         <tbody>
           {rows.length === 0 ? (
             <tr>
-              <td colSpan={headers.length} className="py-6 text-sm text-[#E2E8F0]/65">
+              <td colSpan={headers.length} className="py-6 text-sm text-[#6B7280]">
                 {emptyMessage}
               </td>
             </tr>
@@ -581,17 +602,17 @@ function DataTable({ headers, rows, renderRow, emptyMessage }) {
 
 function StatusBadge({ status }) {
   const palette = {
-    Pending: "bg-amber-300/20 text-amber-200",
-    Approved: "bg-emerald-300/20 text-emerald-200",
-    Declined: "bg-rose-300/20 text-rose-200",
-    Paid: "bg-emerald-300/20 text-emerald-200",
-    Unpaid: "bg-rose-300/20 text-rose-200",
-    Active: "bg-emerald-300/20 text-emerald-200",
-    Inactive: "bg-slate-300/20 text-slate-200",
+    Pending: "bg-[#D1FAE5] text-[#6B7280]",
+    Approved: "bg-[#D1FAE5] text-[#15803D]",
+    Declined: "bg-[#DC2626]/10 text-[#DC2626]",
+    Paid: "bg-[#D1FAE5] text-[#15803D]",
+    Unpaid: "bg-[#DC2626]/10 text-[#DC2626]",
+    Active: "bg-[#D1FAE5] text-[#15803D]",
+    Inactive: "bg-[#D1FAE5] text-[#6B7280]",
   };
 
   return (
-    <span className={`rounded-full px-3 py-1 text-xs font-medium ${palette[status] || "bg-[#1A2947] text-[#E2E8F0]"}`}>
+    <span className={`rounded-full px-3 py-1 text-xs font-medium ${palette[status] || "bg-[#D1FAE5] text-[#064E3B]"}`}>
       {status}
     </span>
   );
@@ -599,11 +620,11 @@ function StatusBadge({ status }) {
 
 function Pager({ page, totalPages, onChange }) {
   return (
-    <div className="mt-3 flex items-center justify-end gap-2 text-xs text-[#E2E8F0]/70">
+    <div className="mt-3 flex items-center justify-end gap-2 text-xs text-[#6B7280]">
       <button
         onClick={() => onChange((prev) => Math.max(1, prev - 1))}
         disabled={page <= 1}
-        className="rounded border border-[#223355] px-2 py-1 disabled:opacity-40"
+        className="rounded border border-[#D1FAE5] px-2 py-1 disabled:opacity-40"
       >
         Prev
       </button>
@@ -613,7 +634,7 @@ function Pager({ page, totalPages, onChange }) {
       <button
         onClick={() => onChange((prev) => Math.min(totalPages, prev + 1))}
         disabled={page >= totalPages}
-        className="rounded border border-[#223355] px-2 py-1 disabled:opacity-40"
+        className="rounded border border-[#D1FAE5] px-2 py-1 disabled:opacity-40"
       >
         Next
       </button>

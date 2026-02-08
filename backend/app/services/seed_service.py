@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.security import hash_password
 from app.models.product import Product
+from app.models.supplier import Supplier
 from app.models.store import Store
 from app.models.user import User
 
@@ -53,6 +54,23 @@ DEMO_PRODUCTS = [
     },
 ]
 
+DEMO_SUPPLIERS = [
+    {
+        "name": "Fresh Foods Ltd",
+        "contact_name": "Sarah Wanjiku",
+        "phone": "+254700000111",
+        "email": "sarah@freshfoods.example",
+        "address": "Industrial Area, Nairobi",
+    },
+    {
+        "name": "Green Harvest Distributors",
+        "contact_name": "Ahmed Ali",
+        "phone": "+254700000222",
+        "email": "ahmed@greenharvest.example",
+        "address": "Mombasa Road, Nairobi",
+    },
+]
+
 
 def _ensure_default_store(db: Session) -> Store:
     store = db.query(Store).filter(Store.name == DEMO_STORE["name"]).first()
@@ -72,6 +90,15 @@ def _ensure_demo_products(db: Session) -> None:
         if exists:
             continue
         db.add(Product(**payload))
+    db.commit()
+
+
+def _ensure_demo_suppliers(db: Session, store_id: int) -> None:
+    for payload in DEMO_SUPPLIERS:
+        exists = db.query(Supplier).filter(Supplier.name == payload["name"], Supplier.store_id == store_id).first()
+        if exists:
+            continue
+        db.add(Supplier(store_id=store_id, **payload))
     db.commit()
 
 
@@ -99,3 +126,4 @@ def seed_demo_users(db: Session) -> None:
 
     db.commit()
     _ensure_demo_products(db)
+    _ensure_demo_suppliers(db, store.id)

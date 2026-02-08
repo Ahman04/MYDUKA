@@ -20,8 +20,14 @@ from app.models import (
     inventory,
     inventory_event,
     notification,
+    purchase_order,
     product,
     refresh_token,
+    return_request,
+    sale,
+    expense,
+    stock_transfer,
+    supplier,
     stock_threshold,
     store,
     supply_request,
@@ -30,7 +36,8 @@ from app.models import (
 
 # Import routers
 from app.routes import auth, users, products, inventory as inventory_routes
-from app.routes import dashboard, notifications as notifications_routes, reports, supply_requests
+from app.routes import analytics, dashboard, notifications as notifications_routes, reports, supply_requests
+from app.routes import expenses, purchase_orders, returns, sales, stock_transfers, suppliers
 
 logger = logging.getLogger("myduka.api")
 METRICS = {
@@ -109,6 +116,13 @@ app.include_router(supply_requests.router)
 app.include_router(reports.router)
 app.include_router(dashboard.router)
 app.include_router(notifications_routes.router)
+app.include_router(suppliers.router)
+app.include_router(purchase_orders.router)
+app.include_router(stock_transfers.router)
+app.include_router(returns.router)
+app.include_router(sales.router)
+app.include_router(expenses.router)
+app.include_router(analytics.router)
 
 
 @app.get("/")

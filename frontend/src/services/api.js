@@ -178,3 +178,99 @@ export const supplyRequestsApi = {
     });
   },
 };
+
+export const suppliersApi = {
+  list(params = {}) {
+    return api.get("/api/suppliers", { params });
+  },
+  create(payload) {
+    return api.post("/api/suppliers", payload);
+  },
+  update(supplierId, payload) {
+    return api.put(`/api/suppliers/${supplierId}`, payload);
+  },
+  remove(supplierId) {
+    return api.delete(`/api/suppliers/${supplierId}`);
+  },
+};
+
+export const purchaseOrdersApi = {
+  list(params = {}) {
+    return api.get("/api/purchase-orders", { params });
+  },
+  create(payload) {
+    return api.post("/api/purchase-orders", payload);
+  },
+  get(orderId) {
+    return api.get(`/api/purchase-orders/${orderId}`);
+  },
+  updateStatus(orderId, payload) {
+    return api.post(`/api/purchase-orders/${orderId}/status`, payload);
+  },
+};
+
+export const transfersApi = {
+  list(params = {}) {
+    return api.get("/api/stock-transfers", { params });
+  },
+  create(payload) {
+    return api.post("/api/stock-transfers", payload);
+  },
+  updateStatus(transferId, payload) {
+    return api.post(`/api/stock-transfers/${transferId}/status`, payload);
+  },
+};
+
+export const returnsApi = {
+  list(params = {}) {
+    return api.get("/api/returns", { params });
+  },
+  create(payload) {
+    return api.post("/api/returns", payload);
+  },
+  updateStatus(returnId, payload) {
+    return api.post(`/api/returns/${returnId}/status`, payload);
+  },
+};
+
+export const salesApi = {
+  list(params = {}) {
+    return api.get("/api/sales", { params });
+  },
+  create(payload) {
+    return api.post("/api/sales", payload);
+  },
+};
+
+export const expensesApi = {
+  list(params = {}) {
+    return api.get("/api/expenses", { params });
+  },
+  create(payload) {
+    return api.post("/api/expenses", payload);
+  },
+};
+
+export const analyticsApi = {
+  storePerformance(params = {}) {
+    return api.get("/api/analytics/store-performance", { params });
+  },
+  topProducts(params = {}) {
+    return api.get("/api/analytics/top-products", { params });
+  },
+  slowMovers(params = {}) {
+    return api.get("/api/analytics/slow-movers", { params });
+  },
+  paymentTrend(params = {}) {
+    return api.get("/api/analytics/payment-trend", { params });
+  },
+  financialSummary() {
+    return api.get("/api/analytics/financial-summary");
+  },
+  expensesByCategory() {
+    return api.get("/api/analytics/expenses-by-category");
+  },
+  salesTrend(params = {}) {
+    return api.get("/api/analytics/sales-trend", { params });
+  },
+};

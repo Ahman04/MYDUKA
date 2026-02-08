@@ -4,6 +4,13 @@ import Login from "./pages/Login.jsx";
 import AdminPanel from "./pages/AdminPanel.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import MerchantDashboard from "./pages/MerchantDashboard.jsx";
+import Suppliers from "./pages/Suppliers.jsx";
+import PurchaseOrders from "./pages/PurchaseOrders.jsx";
+import Transfers from "./pages/Transfers.jsx";
+import Returns from "./pages/Returns.jsx";
+import Sales from "./pages/Sales.jsx";
+import Expenses from "./pages/Expenses.jsx";
+import Analytics from "./pages/Analytics.jsx";
 import {
   authApi,
   clearAuthSession,
@@ -78,7 +85,7 @@ export default function App() {
 
   if (isRestoringSession) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0F172A] text-[#E2E8F0]">
+      <div className="flex min-h-screen items-center justify-center bg-[#F0FDF4] text-[#064E3B]">
         Restoring session...
       </div>
     );
@@ -108,6 +115,62 @@ export default function App() {
         element={
           <ProtectedRoute allowedRoles={["merchant"]}>
             <MerchantDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/suppliers"
+        element={
+          <ProtectedRoute allowedRoles={["admin", "merchant"]}>
+            <Suppliers />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/purchase-orders"
+        element={
+          <ProtectedRoute allowedRoles={["admin", "merchant"]}>
+            <PurchaseOrders />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/transfers"
+        element={
+          <ProtectedRoute allowedRoles={["admin", "merchant"]}>
+            <Transfers />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/returns"
+        element={
+          <ProtectedRoute allowedRoles={["admin", "merchant"]}>
+            <Returns />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/sales"
+        element={
+          <ProtectedRoute allowedRoles={["admin", "merchant"]}>
+            <Sales />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/expenses"
+        element={
+          <ProtectedRoute allowedRoles={["admin", "merchant"]}>
+            <Expenses />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/analytics"
+        element={
+          <ProtectedRoute allowedRoles={["admin", "merchant"]}>
+            <Analytics />
           </ProtectedRoute>
         }
       />
