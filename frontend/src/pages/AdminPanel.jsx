@@ -4,20 +4,16 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import {
-  Bell,
   ClipboardCheck,
   CreditCard,
   Loader2,
-  LogOut,
   Store,
   UserPlus,
   Users,
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import PageShell from "../components/PageShell";
 import {
-  getStoredUser,
   inventoryApi,
-  logoutSession,
   reportApi,
   supplyRequestsApi,
   usersApi,
@@ -37,16 +33,6 @@ const EMPTY_DASHBOARD = {
 };
 
 const PAGE_SIZE = 6;
-const QUICK_LINKS = [
-  { label: "Suppliers", to: "/suppliers" },
-  { label: "Purchase Orders", to: "/purchase-orders" },
-  { label: "Transfers", to: "/transfers" },
-  { label: "Returns", to: "/returns" },
-  { label: "Sales", to: "/sales" },
-  { label: "Expenses", to: "/expenses" },
-  { label: "Reporting", to: "/analytics" },
-];
-
 const formatCurrency = (amount) =>
   new Intl.NumberFormat("en-KE", {
     style: "currency",
@@ -62,8 +48,6 @@ const formatDate = (value) =>
   });
 
 export default function AdminPanel() {
-  const navigate = useNavigate();
-  const currentUser = useMemo(() => getStoredUser(), []);
   const [dashboard, setDashboard] = useState(EMPTY_DASHBOARD);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
@@ -71,6 +55,7 @@ export default function AdminPanel() {
   const [message, setMessage] = useState("");
   const [requestFilter, setRequestFilter] = useState("All");
   const [requestSearch, setRequestSearch] = useState("");
+  const [requestNotes, setRequestNotes] = useState({});
   const [paymentFilter, setPaymentFilter] = useState("All");
   const [clerkSearch, setClerkSearch] = useState("");
   const [supplyPage, setSupplyPage] = useState(1);
@@ -152,21 +137,21 @@ export default function AdminPanel() {
     window.setTimeout(() => setMessage(""), 2500);
   };
 
-  const handleLogout = async () => {
-    await logoutSession();
-    navigate("/", { replace: true });
-  };
-
-  const handleRequestStatus = async (requestId, action) => {
+  const handleRequestStatus = async (requestId, action, adminNotes = "") => {
     setBusyId(`request-${requestId}`);
     setError("");
     try {
       if (action === "approve") {
-        await supplyRequestsApi.approve(requestId);
+        await supplyRequestsApi.approve(requestId, adminNotes);
       } else {
-        await supplyRequestsApi.decline(requestId, "Declined by admin");
+        await supplyRequestsApi.decline(requestId, adminNotes || "Declined by admin");
       }
       await loadDashboard();
+      setRequestNotes((prev) => {
+        const next = { ...prev };
+        delete next[requestId];
+        return next;
+      });
       setTemporaryMessage(`Request ${action}d successfully.`);
     } catch (requestError) {
       const detail = requestError?.response?.data?.detail;
@@ -193,6 +178,10 @@ export default function AdminPanel() {
   };
 
   const handleClerkStatus = async (clerk, isActive) => {
+    const nextAction = isActive ? "activate" : "deactivate";
+    if (!window.confirm(`Are you sure you want to ${nextAction} ${clerk.name}?`)) {
+      return;
+    }
     setBusyId(`clerk-${clerk.id}`);
     setError("");
     try {
@@ -208,6 +197,9 @@ export default function AdminPanel() {
   };
 
   const handleDeleteClerk = async (clerk) => {
+    if (!window.confirm(`Delete ${clerk.name}? This cannot be undone.`)) {
+      return;
+    }
     setBusyId(`delete-${clerk.id}`);
     setError("");
     try {
@@ -267,40 +259,7 @@ export default function AdminPanel() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F0FDF4]">
-      <header className="border-b border-[#D1FAE5] bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#34D399] font-bold text-[#064E3B]">
-              M
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-wide text-[#34D399]">MyDuka</p>
-              <h1 className="text-xl font-semibold text-[#064E3B]">Admin Dashboard</h1>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <button className="relative rounded-full border border-[#D1FAE5] p-2 text-[#6B7280] hover:text-[#064E3B]">
-              <Bell className="h-5 w-5" />
-            </button>
-            <div className="text-right">
-              <p className="text-sm font-medium text-[#064E3B]">
-                {currentUser ? `${currentUser.first_name} ${currentUser.last_name}` : "Admin User"}
-              </p>
-              <p className="text-xs text-[#6B7280]">Admin</p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="rounded-lg border border-[#D1FAE5] p-2 text-[#6B7280] hover:bg-white hover:text-[#064E3B]"
-              aria-label="Log out"
-            >
-              <LogOut className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-6 py-8 text-[#064E3B]">
+    <PageShell title="Admin Dashboard" subtitle="Store operations and approvals.">
         {loading ? (
           <div className="flex items-center gap-2 rounded-xl border border-[#D1FAE5] bg-white px-4 py-3 text-sm">
             <Loader2 className="h-4 w-4 animate-spin text-[#34D399]" />
@@ -328,18 +287,6 @@ export default function AdminPanel() {
               <p className="mt-2 text-2xl font-semibold text-[#064E3B]">{card.value}</p>
               <p className="mt-1 text-xs text-[#6B7280]">{card.trend}</p>
             </div>
-          ))}
-        </div>
-
-        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-          {QUICK_LINKS.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className="rounded-lg border border-[#D1FAE5] bg-white px-3 py-2 text-xs text-[#6B7280] hover:bg-[#D1FAE5] hover:text-[#064E3B]"
-            >
-              {link.label}
-            </Link>
           ))}
         </div>
 
@@ -420,21 +367,35 @@ export default function AdminPanel() {
                 </td>
                 <td className="py-3">
                   {item.status === "Pending" ? (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleRequestStatus(item.id, "approve")}
-                        disabled={busyId === `request-${item.id}`}
-                        className="rounded bg-[#D1FAE5] px-2 py-1 text-xs text-[#15803D]"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => handleRequestStatus(item.id, "decline")}
-                        disabled={busyId === `request-${item.id}`}
-                        className="rounded bg-[#DC2626]/10 px-2 py-1 text-xs text-[#DC2626]"
-                      >
-                        Decline
-                      </button>
+                    <div className="flex flex-col gap-2">
+                      <input
+                        value={requestNotes[item.id] || ""}
+                        onChange={(e) =>
+                          setRequestNotes((prev) => ({ ...prev, [item.id]: e.target.value }))
+                        }
+                        placeholder="Admin note (optional)"
+                        className="rounded border border-[#D1FAE5] bg-[#F0FDF4] px-2 py-1 text-xs"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() =>
+                            handleRequestStatus(item.id, "approve", requestNotes[item.id] || "")
+                          }
+                          disabled={busyId === `request-${item.id}`}
+                          className="rounded bg-[#D1FAE5] px-2 py-1 text-xs text-[#15803D]"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleRequestStatus(item.id, "decline", requestNotes[item.id] || "")
+                          }
+                          disabled={busyId === `request-${item.id}`}
+                          className="rounded bg-[#DC2626]/10 px-2 py-1 text-xs text-[#DC2626]"
+                        >
+                          Decline
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <span className="text-xs text-[#6B7280]">No action</span>
@@ -556,8 +517,7 @@ export default function AdminPanel() {
             emptyMessage="No clerk performance data yet."
           />
         </Section>
-      </main>
-    </div>
+    </PageShell>
   );
 }
 

@@ -2,6 +2,7 @@
 from sqlalchemy.orm import Session
 
 from app.core.security import hash_password
+from app.models import inventory, supply_request  # register relationships
 from app.models.product import Product
 from app.models.supplier import Supplier
 from app.models.store import Store

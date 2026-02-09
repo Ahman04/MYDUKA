@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 def build_admin_invite_link(token: str) -> str:
     """Build frontend invite URL from a token."""
     base_url = settings.frontend_base_url.rstrip("/")
-    return f"{base_url}/?invite_token={token}"
+    return f"{base_url}/login?invite_token={token}"
 
 
 def send_admin_invite_email(email: str, invite_link: str) -> None:

@@ -5,17 +5,15 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   BarChart3,
-  Building2,
   Copy,
   Download,
   Loader2,
-  LogOut,
   MailPlus,
   Store,
   Users,
   Wallet,
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import PageShell from "../components/PageShell";
 import {
   Bar,
   BarChart,
@@ -29,7 +27,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { getStoredUser, logoutSession, reportApi, usersApi } from "../services/api";
+import { reportApi, usersApi } from "../services/api";
 
 const EMPTY_DATA = {
   stats: {
@@ -50,16 +48,6 @@ const EMPTY_DATA = {
 };
 
 const PAGE_SIZE = 6;
-const QUICK_LINKS = [
-  { label: "Suppliers", to: "/suppliers" },
-  { label: "Purchase Orders", to: "/purchase-orders" },
-  { label: "Transfers", to: "/transfers" },
-  { label: "Returns", to: "/returns" },
-  { label: "Sales", to: "/sales" },
-  { label: "Expenses", to: "/expenses" },
-  { label: "Reporting", to: "/analytics" },
-];
-
 const formatCurrency = (amount) =>
   new Intl.NumberFormat("en-KE", {
     style: "currency",
@@ -68,8 +56,6 @@ const formatCurrency = (amount) =>
   }).format(amount || 0);
 
 export default function MerchantDashboard() {
-  const navigate = useNavigate();
-  const currentUser = useMemo(() => getStoredUser(), []);
   const [dashboard, setDashboard] = useState(EMPTY_DATA);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
@@ -77,6 +63,7 @@ export default function MerchantDashboard() {
   const [message, setMessage] = useState("");
   const [inviteForm, setInviteForm] = useState({ email: "", store_id: "" });
   const [latestInvite, setLatestInvite] = useState("");
+  const [latestInviteExpiry, setLatestInviteExpiry] = useState(null);
   const [adminSearch, setAdminSearch] = useState("");
   const [adminPage, setAdminPage] = useState(1);
 
@@ -127,11 +114,6 @@ export default function MerchantDashboard() {
     window.setTimeout(() => setMessage(""), 2500);
   };
 
-  const handleLogout = async () => {
-    await logoutSession();
-    navigate("/", { replace: true });
-  };
-
   const handleInviteAdmin = async (event) => {
     event.preventDefault();
     setBusyId("invite");
@@ -143,6 +125,7 @@ export default function MerchantDashboard() {
       };
       const response = await usersApi.createAdminInvite(payload);
       setLatestInvite(response.data.invite_link);
+      setLatestInviteExpiry(response.data.expires_in_hours || null);
       setMessage("Invite link generated.");
       setInviteForm({ email: "", store_id: "" });
     } catch (requestError) {
@@ -154,6 +137,10 @@ export default function MerchantDashboard() {
   };
 
   const handleAdminStatus = async (admin, isActive) => {
+    const nextAction = isActive ? "activate" : "deactivate";
+    if (!window.confirm(`Are you sure you want to ${nextAction} ${admin.name}?`)) {
+      return;
+    }
     setBusyId(`admin-${admin.id}`);
     setError("");
     try {
@@ -169,6 +156,9 @@ export default function MerchantDashboard() {
   };
 
   const handleDeleteAdmin = async (admin) => {
+    if (!window.confirm(`Delete ${admin.name}? This cannot be undone.`)) {
+      return;
+    }
     setBusyId(`delete-${admin.id}`);
     setError("");
     try {
@@ -260,44 +250,16 @@ export default function MerchantDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F0FDF4]">
-      <header className="border-b border-[#D1FAE5] bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#34D399] text-[#064E3B]">
-              <Building2 className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-wide text-[#34D399]">MyDuka</p>
-              <h1 className="text-base font-semibold text-[#064E3B]">Merchant Dashboard</h1>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 text-sm">
-            <button
-              onClick={exportCsv}
-              className="inline-flex items-center gap-2 rounded-lg border border-[#D1FAE5] px-3 py-1.5 text-xs text-[#6B7280] hover:bg-[#D1FAE5]"
-            >
-              <Download className="h-3.5 w-3.5" />
-              Export CSV
-            </button>
-            <div className="text-right">
-              <p className="font-medium text-[#064E3B]">
-                {currentUser ? `${currentUser.first_name} ${currentUser.last_name}` : "Merchant User"}
-              </p>
-              <p className="text-xs text-[#6B7280]">Merchant</p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="rounded-full border border-[#D1FAE5] p-2 text-[#6B7280] hover:bg-[#D1FAE5] hover:text-[#064E3B]"
-              aria-label="Log out"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-6 py-8 text-[#064E3B]">
+    <PageShell title="Merchant Dashboard" subtitle="Multi-store oversight and profitability insights.">
+      <div className="flex justify-end">
+        <button
+          onClick={exportCsv}
+          className="inline-flex items-center gap-2 rounded-lg border border-[#D1FAE5] px-3 py-1.5 text-xs text-[#6B7280] hover:bg-[#D1FAE5]"
+        >
+          <Download className="h-3.5 w-3.5" />
+          Export CSV
+        </button>
+      </div>
         {loading ? (
           <div className="mb-6 flex items-center gap-2 rounded-xl border border-[#D1FAE5] bg-white px-4 py-3 text-sm">
             <Loader2 className="h-4 w-4 animate-spin text-[#34D399]" />
@@ -324,18 +286,6 @@ export default function MerchantDashboard() {
               </div>
               <p className="mt-2 text-2xl font-semibold text-[#064E3B]">{stat.value}</p>
             </div>
-          ))}
-        </div>
-
-        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
-          {QUICK_LINKS.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className="rounded-lg border border-[#D1FAE5] bg-white px-3 py-2 text-xs text-[#6B7280] hover:bg-[#D1FAE5] hover:text-[#064E3B]"
-            >
-              {link.label}
-            </Link>
           ))}
         </div>
 
@@ -375,6 +325,11 @@ export default function MerchantDashboard() {
           {latestInvite ? (
             <div className="mt-4 rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] p-3 text-sm">
               <p className="break-all text-[#6B7280]">{latestInvite}</p>
+              {latestInviteExpiry ? (
+                <p className="mt-2 text-xs text-[#6B7280]">
+                  Expires in {latestInviteExpiry} hours.
+                </p>
+              ) : null}
               <button
                 onClick={copyInviteLink}
                 className="mt-2 inline-flex items-center gap-2 rounded bg-[#D1FAE5] px-3 py-1.5 text-xs"
@@ -539,8 +494,7 @@ export default function MerchantDashboard() {
           </div>
           <Pager page={adminPage} totalPages={adminPages} onChange={setAdminPage} />
         </section>
-      </main>
-    </div>
+    </PageShell>
   );
 }
 

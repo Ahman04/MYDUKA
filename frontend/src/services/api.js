@@ -105,6 +105,11 @@ export const reportApi = {
   clerkDashboard() {
     return api.get("/api/reports/clerk/dashboard");
   },
+  clerkOverview(lite = false) {
+    return api.get("/api/reports/clerk/overview", {
+      params: { lite },
+    });
+  },
   merchantDashboard() {
     return api.get("/api/reports/merchant/dashboard");
   },
@@ -130,13 +135,13 @@ export const usersApi = {
 
 export const storesApi = {
   list(params = {}) {
-    return api.get("/api/stores", { params });
+    return api.get("/api/stores/", { params });
   },
 };
 
 export const productsApi = {
   list(params = {}) {
-    return api.get("/api/products", { params });
+    return api.get("/api/products/", { params });
   },
   create(payload) {
     return api.post("/api/products", payload);
@@ -162,7 +167,7 @@ export const inventoryApi = {
 
 export const supplyRequestsApi = {
   list(params = {}) {
-    return api.get("/api/supply-requests", { params });
+    return api.get("/api/supply-requests/", { params });
   },
   create(payload) {
     return api.post("/api/supply-requests", payload);
@@ -181,7 +186,7 @@ export const supplyRequestsApi = {
 
 export const suppliersApi = {
   list(params = {}) {
-    return api.get("/api/suppliers", { params });
+    return api.get("/api/suppliers/", { params });
   },
   create(payload) {
     return api.post("/api/suppliers", payload);
@@ -196,7 +201,7 @@ export const suppliersApi = {
 
 export const purchaseOrdersApi = {
   list(params = {}) {
-    return api.get("/api/purchase-orders", { params });
+    return api.get("/api/purchase-orders/", { params });
   },
   create(payload) {
     return api.post("/api/purchase-orders", payload);
@@ -211,7 +216,7 @@ export const purchaseOrdersApi = {
 
 export const transfersApi = {
   list(params = {}) {
-    return api.get("/api/stock-transfers", { params });
+    return api.get("/api/stock-transfers/", { params });
   },
   create(payload) {
     return api.post("/api/stock-transfers", payload);
@@ -223,7 +228,7 @@ export const transfersApi = {
 
 export const returnsApi = {
   list(params = {}) {
-    return api.get("/api/returns", { params });
+    return api.get("/api/returns/", { params });
   },
   create(payload) {
     return api.post("/api/returns", payload);
@@ -235,7 +240,7 @@ export const returnsApi = {
 
 export const salesApi = {
   list(params = {}) {
-    return api.get("/api/sales", { params });
+    return api.get("/api/sales/", { params });
   },
   create(payload) {
     return api.post("/api/sales", payload);
@@ -244,7 +249,7 @@ export const salesApi = {
 
 export const expensesApi = {
   list(params = {}) {
-    return api.get("/api/expenses", { params });
+    return api.get("/api/expenses/", { params });
   },
   create(payload) {
     return api.post("/api/expenses", payload);

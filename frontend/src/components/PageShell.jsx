@@ -3,8 +3,6 @@ import { LogOut } from "lucide-react";
 import { getStoredUser, logoutSession } from "../services/api";
 
 const defaultLinks = [
-  { to: "/merchant", label: "Merchant" },
-  { to: "/admin", label: "Admin" },
   { to: "/suppliers", label: "Suppliers" },
   { to: "/purchase-orders", label: "Purchase Orders" },
   { to: "/transfers", label: "Transfers" },
@@ -49,7 +47,7 @@ export default function PageShell({ title, subtitle, children, links = defaultLi
             </button>
           </div>
         </div>
-        <nav className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-6 pb-4 text-sm">
+        <nav className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-6 pb-4 text-sm lg:hidden">
           {links.map((link) => {
             const isActive = location.pathname === link.to;
             return (
@@ -69,7 +67,37 @@ export default function PageShell({ title, subtitle, children, links = defaultLi
         </nav>
       </header>
 
-      <main className="mx-auto max-w-6xl px-6 py-8 text-[#064E3B]">{children}</main>
+      <main className="mx-auto max-w-6xl px-6 py-8 text-[#064E3B]">
+        <div className="flex flex-col gap-6 lg:flex-row">
+          <aside className="hidden w-56 shrink-0 lg:block">
+            <div className="rounded-2xl border border-[#D1FAE5] bg-white p-4 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[#6B7280]">
+                Operations
+              </p>
+              <div className="mt-4 flex flex-col gap-2 text-sm">
+                {links.map((link) => {
+                  const isActive = location.pathname === link.to;
+                  return (
+                    <Link
+                      key={link.to}
+                      to={link.to}
+                      className={`rounded-lg px-3 py-2 ${
+                        isActive
+                          ? "bg-[#D1FAE5] text-[#064E3B] font-semibold"
+                          : "text-[#6B7280] hover:bg-[#D1FAE5] hover:text-[#064E3B]"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </aside>
+
+          <section className="min-w-0 flex-1">{children}</section>
+        </div>
+      </main>
     </div>
   );
 }

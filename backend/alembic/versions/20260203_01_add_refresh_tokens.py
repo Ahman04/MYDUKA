@@ -1,7 +1,7 @@
 """add refresh tokens table
 
 Revision ID: 20260203_01
-Revises:
+Revises: 20260202_01
 Create Date: 2026-02-03 22:20:00
 """
 from typing import Sequence, Union
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 
 revision: str = "20260203_01"
-down_revision: Union[str, None] = None
+down_revision: Union[str, None] = "20260202_01"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

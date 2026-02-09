@@ -5,10 +5,7 @@ import { MemoryRouter } from "react-router-dom";
 import Dashboard from "../pages/Dashboard.jsx";
 
 const mockNavigate = vi.fn();
-const mockClerkDashboard = vi.fn();
-const mockProductsList = vi.fn();
-const mockStoresList = vi.fn();
-const mockSupplyList = vi.fn();
+const mockClerkOverview = vi.fn();
 const mockInventoryCreate = vi.fn();
 const mockSupplyCreate = vi.fn();
 const mockProductsCreate = vi.fn();
@@ -17,17 +14,12 @@ vi.mock("../services/api", () => ({
   getStoredUser: () => ({ first_name: "Mike", last_name: "Clerk", role: "clerk", store_id: 1 }),
   logoutSession: vi.fn(),
   reportApi: {
-    clerkDashboard: (...args) => mockClerkDashboard(...args),
+    clerkOverview: (...args) => mockClerkOverview(...args),
   },
   productsApi: {
-    list: (...args) => mockProductsList(...args),
     create: (...args) => mockProductsCreate(...args),
   },
-  storesApi: {
-    list: (...args) => mockStoresList(...args),
-  },
   supplyRequestsApi: {
-    list: (...args) => mockSupplyList(...args),
     create: (...args) => mockSupplyCreate(...args),
   },
   inventoryApi: {
@@ -46,28 +38,31 @@ vi.mock("react-router-dom", async () => {
 });
 
 function seedDashboardCalls() {
-  mockClerkDashboard.mockResolvedValue({
-    data: {
-      stats: { total_products: 0, total_stock: 0, spoilt_items: 0 },
-      products: [],
-    },
-  });
-  mockProductsList.mockResolvedValue({
-    data: [{ id: 1, name: "Rice - 5kg" }],
-  });
-  mockStoresList.mockResolvedValue({
-    data: [{ id: 1, name: "Downtown" }],
-  });
-  mockSupplyList.mockResolvedValue({ data: [] });
+  mockClerkOverview.mockImplementation((lite) =>
+    Promise.resolve({
+      data: lite
+        ? {
+            stats: { total_products: 0, total_stock: 0, spoilt_items: 0 },
+            inventory: [],
+            products: [],
+            stores: [],
+            supply_requests: [],
+          }
+        : {
+            stats: { total_products: 0, total_stock: 0, spoilt_items: 0 },
+            inventory: [],
+            products: [{ id: 1, name: "Rice - 5kg" }],
+            stores: [{ id: 1, name: "Downtown" }],
+            supply_requests: [],
+          },
+    })
+  );
 }
 
 describe("Clerk dashboard actions", () => {
   beforeEach(() => {
     mockNavigate.mockReset();
-    mockClerkDashboard.mockReset();
-    mockProductsList.mockReset();
-    mockStoresList.mockReset();
-    mockSupplyList.mockReset();
+    mockClerkOverview.mockReset();
     mockInventoryCreate.mockReset();
     mockSupplyCreate.mockReset();
     mockProductsCreate.mockReset();
@@ -84,7 +79,7 @@ describe("Clerk dashboard actions", () => {
       </MemoryRouter>
     );
 
-    await waitFor(() => expect(mockClerkDashboard).toHaveBeenCalled());
+    await waitFor(() => expect(mockClerkOverview).toHaveBeenCalled());
 
     await user.type(screen.getByPlaceholderText("e.g. Rice - 5kg"), "Rice - 5kg");
     await user.type(screen.getByPlaceholderText("e.g. Grains"), "Grains");
@@ -113,10 +108,11 @@ describe("Clerk dashboard actions", () => {
       </MemoryRouter>
     );
 
-    await waitFor(() => expect(mockClerkDashboard).toHaveBeenCalled());
+    await waitFor(() => expect(mockClerkOverview).toHaveBeenCalledWith(false));
 
     await user.click(screen.getByRole("button", { name: /Request Supply/i }));
 
+    await waitFor(() => expect(screen.getAllByRole("combobox")[0]).not.toBeDisabled());
     const selects = screen.getAllByRole("combobox");
     await user.selectOptions(selects[0], "1");
     await user.type(screen.getByPlaceholderText("e.g. 50"), "20");

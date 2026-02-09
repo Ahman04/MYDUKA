@@ -4,13 +4,21 @@
 
 :root {
   color-scheme: light;
+  --color-bg: #F0FDF4;
+  --color-surface: #FFFFFF;
+  --color-primary: #15803D;
+  --color-accent: #34D399;
+  --color-text: #064E3B;
+  --color-muted: #6B7280;
+  --color-border: #D1FAE5;
+  --color-alert: #DC2626;
 }
 
 body {
   margin: 0;
-  font-family: "Poppins", system-ui, -apple-system, sans-serif;
-  background: #F0FDF4;
-  color: #064E3B;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 @keyframes float {

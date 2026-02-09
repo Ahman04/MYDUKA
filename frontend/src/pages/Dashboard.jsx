@@ -7,21 +7,18 @@ import {
   AlertTriangle,
   Box,
   Loader2,
-  LogOut,
   PackagePlus,
   Pencil,
   Send,
   Trash2,
   TrendingUp,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import PageShell from "../components/PageShell";
 import {
   getStoredUser,
   inventoryApi,
-  logoutSession,
   productsApi,
   reportApi,
-  storesApi,
   supplyRequestsApi,
 } from "../services/api";
 
@@ -50,7 +47,6 @@ function getInventoryStatus(stock) {
 }
 
 export default function Dashboard() {
-  const navigate = useNavigate();
   const currentUser = useMemo(() => getStoredUser(), []);
   const [activeForm, setActiveForm] = useState("record");
   const [dashboard, setDashboard] = useState(EMPTY_DATA);
@@ -60,6 +56,9 @@ export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [secondaryLoading, setSecondaryLoading] = useState(false);
+  const [secondaryLoaded, setSecondaryLoaded] = useState(false);
+  const [secondaryError, setSecondaryError] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -96,19 +95,68 @@ export default function Dashboard() {
 
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
   const pagedProducts = filteredProducts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const requestIsLoading = secondaryLoading && !secondaryLoaded;
+  const requestHasProducts = products.length > 0;
 
-  const loadData = async () => {
-    const [dashboardRes, productsRes, storesRes, requestsRes] = await Promise.all([
-      reportApi.clerkDashboard(),
-      productsApi.list({ limit: 100 }),
-      storesApi.list({ limit: 100, active_only: true }),
-      supplyRequestsApi.list({ limit: 100 }),
-    ]);
+  const loadBase = async () => {
+    const overviewRes = await reportApi.clerkOverview(true);
+    const overview = overviewRes?.data || {};
 
-    setDashboard(dashboardRes.data);
-    setProducts(productsRes.data || []);
-    setStores(storesRes.data || []);
-    setMyRequests(requestsRes.data || []);
+    setDashboard({
+      stats: overview.stats || EMPTY_DATA.stats,
+      products: overview.inventory || [],
+    });
+
+    if (!secondaryLoaded) {
+      setProducts(overview.products || []);
+      setStores(overview.stores || []);
+      setMyRequests(overview.supply_requests || []);
+    }
+  };
+
+  const loadSecondary = async (force = false) => {
+    if (secondaryLoading) return;
+    if (secondaryLoaded && !force) return;
+    setSecondaryLoading(true);
+    setSecondaryError("");
+    try {
+      const overviewRes = await reportApi.clerkOverview(false);
+      const overview = overviewRes?.data || {};
+
+      setDashboard({
+        stats: overview.stats || EMPTY_DATA.stats,
+        products: overview.inventory || [],
+      });
+      setProducts(overview.products || []);
+      setStores(overview.stores || []);
+      setMyRequests(overview.supply_requests || []);
+      setSecondaryLoaded(true);
+    } catch (requestError) {
+      const detail = requestError?.response?.data?.detail;
+      setSecondaryError(typeof detail === "string" ? detail : "Failed to load supporting data.");
+    } finally {
+      setSecondaryLoading(false);
+    }
+  };
+
+  const scheduleSecondaryLoad = () => {
+    if (secondaryLoaded || secondaryLoading) return;
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      window.requestIdleCallback(() => {
+        loadSecondary();
+      });
+    } else {
+      window.setTimeout(() => {
+        loadSecondary();
+      }, 200);
+    }
+  };
+
+  const loadData = async ({ refreshSecondary = false } = {}) => {
+    await loadBase();
+    if (secondaryLoaded || refreshSecondary) {
+      await loadSecondary(true);
+    }
   };
 
   useEffect(() => {
@@ -118,6 +166,9 @@ export default function Dashboard() {
         setLoading(true);
         setError("");
         await loadData();
+        if (active) {
+          scheduleSecondaryLoad();
+        }
       } catch (requestError) {
         if (!active) return;
         const detail = requestError?.response?.data?.detail;
@@ -136,14 +187,15 @@ export default function Dashboard() {
     setPage(1);
   }, [searchTerm]);
 
+  useEffect(() => {
+    if (activeForm === "request") {
+      scheduleSecondaryLoad();
+    }
+  }, [activeForm]);
+
   const setTemporaryMessage = (text) => {
     setMessage(text);
     window.setTimeout(() => setMessage(""), 2500);
-  };
-
-  const handleLogout = async () => {
-    await logoutSession();
-    navigate("/", { replace: true });
   };
 
   const validateRecordForm = () => {
@@ -210,7 +262,13 @@ export default function Dashboard() {
           buying_price: Number(recordForm.buying_price),
           selling_price: Number(recordForm.selling_price),
         });
-        productId = createProductResponse.data.id;
+        const createdProduct = createProductResponse.data;
+        productId = createdProduct.id;
+        setProducts((prev) => {
+          if (!createdProduct?.id) return prev;
+          if (prev.some((item) => item.id === createdProduct.id)) return prev;
+          return [...prev, createdProduct];
+        });
       }
 
       const payload = {
@@ -301,7 +359,7 @@ export default function Dashboard() {
         reason: supplyForm.reason,
       });
       setSupplyForm({ product_id: "", quantity_requested: "", reason: "" });
-      await loadData();
+      await loadData({ refreshSecondary: true });
       setTemporaryMessage("Supply request submitted.");
     } catch (requestError) {
       const detail = requestError?.response?.data?.detail;
@@ -333,37 +391,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F0FDF4]">
-      <header className="border-b border-[#D1FAE5] bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#34D399] font-bold text-[#064E3B]">
-              M
-            </div>
-            <div>
-              <h1 className="text-base font-semibold text-[#064E3B]">MyDuka</h1>
-              <p className="text-xs text-[#6B7280]">Data Entry Clerk Dashboard</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4 text-sm">
-            <div className="text-right">
-              <p className="font-medium text-[#064E3B]">
-                {currentUser ? `${currentUser.first_name} ${currentUser.last_name}` : "Clerk User"}
-              </p>
-              <p className="text-xs text-[#6B7280]">Clerk</p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="rounded-full border border-[#D1FAE5] p-2 text-[#6B7280] hover:bg-[#D1FAE5] hover:text-[#064E3B]"
-              aria-label="Log out"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-6 py-8">
+    <PageShell title="Clerk Dashboard" subtitle="Record stock and request supply.">
         {loading ? (
           <div className="mb-6 flex items-center gap-2 rounded-xl border border-[#D1FAE5] bg-white px-4 py-3 text-sm text-[#6B7280]">
             <Loader2 className="h-4 w-4 animate-spin text-[#34D399]" />
@@ -520,14 +548,37 @@ export default function Dashboard() {
             </form>
           ) : (
             <form onSubmit={handleSupplySubmit} className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              {requestIsLoading ? (
+                <div className="md:col-span-3 flex items-center gap-2 rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-xs text-[#6B7280]">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-[#34D399]" />
+                  Loading products and recent requests...
+                </div>
+              ) : null}
+              {secondaryError ? (
+                <div className="md:col-span-3 rounded-lg border border-[#DC2626]/30 bg-[#DC2626]/10 px-3 py-2 text-xs text-[#DC2626]">
+                  {secondaryError}
+                </div>
+              ) : null}
+              {!requestIsLoading && !requestHasProducts ? (
+                <div className="md:col-span-3 rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-xs text-[#6B7280]">
+                  No products available yet. Record inventory first or ask admin to add products.
+                </div>
+              ) : null}
               <FieldLabel label="Product">
                 <select
                   value={supplyForm.product_id}
                   onChange={(e) => setSupplyForm((prev) => ({ ...prev, product_id: e.target.value }))}
+                  disabled={requestIsLoading || !requestHasProducts}
                   className="rounded-lg border border-[#D1FAE5] bg-[#F0FDF4] px-3 py-2 text-sm"
                   required
                 >
-                  <option value="">Select product</option>
+                  <option value="">
+                    {requestIsLoading
+                      ? "Loading products..."
+                      : requestHasProducts
+                      ? "Select product"
+                      : "No products available"}
+                  </option>
                   {products.map((product) => (
                     <option key={product.id} value={product.id}>
                       {product.name}
@@ -557,7 +608,7 @@ export default function Dashboard() {
               </FieldLabel>
               <button
                 type="submit"
-                disabled={busy}
+                disabled={busy || requestIsLoading || !requestHasProducts}
                 className="rounded-lg bg-[#15803D] px-4 py-2 text-sm font-semibold text-white md:col-span-3"
               >
                 {busy ? "Submitting..." : "Submit Supply Request"}
@@ -571,7 +622,9 @@ export default function Dashboard() {
             <h2 className="text-base font-semibold text-[#064E3B]">My Supply Requests</h2>
           </div>
           <div className="overflow-x-auto px-6 py-4">
-            {myRequests.length === 0 ? (
+            {requestIsLoading && myRequests.length === 0 ? (
+              <p className="text-sm text-[#6B7280]">Loading supply requests...</p>
+            ) : myRequests.length === 0 ? (
               <p className="text-sm text-[#6B7280]">No supply requests submitted yet.</p>
             ) : (
               <table className="w-full min-w-[680px] text-sm">
@@ -695,8 +748,7 @@ export default function Dashboard() {
             </div>
           </div>
         </section>
-      </main>
-    </div>
+    </PageShell>
   );
 }
 

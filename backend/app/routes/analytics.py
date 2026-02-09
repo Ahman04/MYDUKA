@@ -49,11 +49,11 @@ async def store_performance(
         .outerjoin(Sale, Sale.store_id == Store.id)
         .group_by(Store.id)
         .order_by(func.sum(Sale.total_price).desc())
-        .limit(limit)
     )
     if current_user.role == "admin" and current_user.store_id is not None:
         query = query.filter(Store.id == current_user.store_id)
 
+    query = query.limit(limit)
     rows = query.all()
     return [
         StorePerformanceItem(
@@ -84,11 +84,11 @@ async def top_products(
         .join(Sale, Sale.product_id == Product.id)
         .group_by(Product.id)
         .order_by(func.sum(Sale.total_price).desc())
-        .limit(limit)
     )
     if current_user.role == "admin" and current_user.store_id is not None:
         query = query.filter(Sale.store_id == current_user.store_id)
 
+    query = query.limit(limit)
     rows = query.all()
     return [
         ProductPerformanceItem(
@@ -119,11 +119,11 @@ async def slow_movers(
         .join(Sale, Sale.product_id == Product.id)
         .group_by(Product.id)
         .order_by(func.sum(Sale.quantity).asc())
-        .limit(limit)
     )
     if current_user.role == "admin" and current_user.store_id is not None:
         query = query.filter(Sale.store_id == current_user.store_id)
 
+    query = query.limit(limit)
     rows = query.all()
     return [
         ProductPerformanceItem(

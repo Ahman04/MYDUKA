@@ -10,6 +10,8 @@ from app.models.product import Product
 from app.models.store import Store
 from app.models.supply_request import SupplyRequest
 from app.models.user import User
+from app.schemas.inventory import StoreListResponse
+from app.schemas.product import ProductListResponse
 from app.schemas.reports import (
     AdminDashboardResponse,
     AdminDashboardStats,
@@ -17,6 +19,7 @@ from app.schemas.reports import (
     AdminSupplyRequestItem,
     ClerkDashboardResponse,
     ClerkDashboardStats,
+    ClerkOverviewResponse,
     ClerkListItem,
     ClerkPerformanceItem,
     ClerkProductItem,
@@ -26,6 +29,7 @@ from app.schemas.reports import (
     MerchantPaymentSummary,
     MerchantPerformanceItem,
     MerchantStoreItem,
+    SupplyRequestResponse,
 )
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
@@ -33,6 +37,41 @@ router = APIRouter(prefix="/api/reports", tags=["reports"])
 
 def _sum_or_zero(value) -> float:
     return 0.0 if value is None else float(value)
+
+
+def _get_clerk_inventory(current_user: User, db: Session):
+    records = (
+        db.query(Inventory)
+        .join(Product, Product.id == Inventory.product_id)
+        .filter(Inventory.created_by == current_user.id)
+        .order_by(Inventory.created_at.desc())
+        .all()
+    )
+
+    total_products = len({record.product_id for record in records})
+    total_stock = sum(record.quantity_in_stock for record in records)
+    spoilt_items = sum(record.quantity_spoilt for record in records)
+
+    products = [
+        ClerkProductItem(
+            inventory_id=record.id,
+            product=record.product.name,
+            category=record.product.description,
+            stock=record.quantity_in_stock,
+            spoil=record.quantity_spoilt,
+            buy_price=record.buying_price,
+            sell_price=record.selling_price,
+            payment_status=record.payment_status.capitalize(),
+        )
+        for record in records
+    ]
+
+    stats = ClerkDashboardStats(
+        total_products=total_products,
+        total_stock=total_stock,
+        spoilt_items=spoilt_items,
+    )
+    return stats, products
 
 
 @router.get("/admin/dashboard", response_model=AdminDashboardResponse)
@@ -161,40 +200,58 @@ async def clerk_dashboard(
 ):
     if current_user.role != "clerk":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only clerks can access clerk dashboard")
+    stats, products = _get_clerk_inventory(current_user, db)
+    return ClerkDashboardResponse(stats=stats, products=products)
 
-    records = (
-        db.query(Inventory)
-        .join(Product, Product.id == Inventory.product_id)
-        .filter(Inventory.created_by == current_user.id)
-        .order_by(Inventory.created_at.desc())
+
+@router.get("/clerk/overview", response_model=ClerkOverviewResponse)
+async def clerk_overview(
+    lite: bool = False,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if current_user.role != "clerk":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only clerks can access clerk dashboard")
+
+    stats, inventory = _get_clerk_inventory(current_user, db)
+
+    if lite:
+        return ClerkOverviewResponse(
+            stats=stats,
+            inventory=inventory,
+            products=[],
+            stores=[],
+            supply_requests=[],
+        )
+
+    products = (
+        db.query(Product)
+        .filter(Product.is_active.is_(True))
+        .order_by(Product.name.asc())
+        .limit(200)
+        .all()
+    )
+    stores = (
+        db.query(Store)
+        .filter(Store.is_active.is_(True))
+        .order_by(Store.created_at.desc())
+        .limit(100)
+        .all()
+    )
+    requests = (
+        db.query(SupplyRequest)
+        .filter(SupplyRequest.requested_by == current_user.id)
+        .order_by(SupplyRequest.created_at.desc())
+        .limit(100)
         .all()
     )
 
-    total_products = len({record.product_id for record in records})
-    total_stock = sum(record.quantity_in_stock for record in records)
-    spoilt_items = sum(record.quantity_spoilt for record in records)
-
-    products = [
-        ClerkProductItem(
-            inventory_id=record.id,
-            product=record.product.name,
-            category=record.product.description,
-            stock=record.quantity_in_stock,
-            spoil=record.quantity_spoilt,
-            buy_price=record.buying_price,
-            sell_price=record.selling_price,
-            payment_status=record.payment_status.capitalize(),
-        )
-        for record in records
-    ]
-
-    return ClerkDashboardResponse(
-        stats=ClerkDashboardStats(
-            total_products=total_products,
-            total_stock=total_stock,
-            spoilt_items=spoilt_items,
-        ),
-        products=products,
+    return ClerkOverviewResponse(
+        stats=stats,
+        inventory=inventory,
+        products=[ProductListResponse.model_validate(item) for item in products],
+        stores=[StoreListResponse.model_validate(item) for item in stores],
+        supply_requests=[SupplyRequestResponse.model_validate(item) for item in requests],
     )
 
 

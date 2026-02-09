@@ -27,6 +27,10 @@ MyDuka provides:
 - Clerk dashboard with inventory record/create, edit, delete, supply requests
 - Admin dashboard with supply request approval/decline and clerk/user management actions
 - Merchant dashboard with store/admin analytics and invite-link workflow
+- Core operations pages: suppliers, purchase orders, stock transfers, returns
+- Financial operations pages: sales, expenses
+- Analytics page with CSV export endpoints
+- Inventory history timeline + low stock and unpaid notifications
 - Backend seed service for demo users
 - Backend tests (auth, inventory, reports)
 - Frontend tests (auth, admin panel, clerk dashboard, merchant dashboard)
@@ -41,12 +45,22 @@ MyDuka provides:
 - Create admin invite links
 - Activate/deactivate/delete admin accounts
 - View merchant-level dashboard and payment/performance summaries
+**On login:**
+- Lands on Merchant Dashboard
+- Sees store-level performance and payment summaries
+- Can generate admin invite links and manage admin accounts
+- Can open reporting, suppliers, purchase orders, transfers, returns, sales, and expenses pages
 
 ### Store Admin
 - Register/manage clerks
 - Approve/decline supply requests
 - Update payment status for inventory items
 - View store-level dashboard and clerk performance metrics
+**On login:**
+- Lands on Admin Dashboard
+- Sees pending supply requests, unpaid items, and clerk performance
+- Can manage clerks and resolve supply requests
+- Can open suppliers, purchase orders, transfers, returns, sales, expenses, and analytics pages
 
 ### Data Entry Clerk
 - Record inventory entries
@@ -54,6 +68,11 @@ MyDuka provides:
 - Mark payment status (based on allowed endpoints)
 - Submit supply requests to admins
 - View own stock stats and records
+**On login:**
+- Lands on Clerk Dashboard
+- Records inventory received/spoilt/stock updates
+- Requests additional stock from admins
+- Reviews their own inventory history
 
 ## 6. Core Features
 - JWT authentication (access + refresh)
@@ -66,6 +85,19 @@ MyDuka provides:
 - CI workflow support
 
 ## 7. Technology Stack
+## Technical Expectations (Reference)
+- Backend: Python (Flask or FastAPI)
+- JWT authentication
+- Database: PostgreSQL
+- Wireframes: Figma (mobile-friendly)
+- Testing (expected): Jest & Minitests
+- Frontend: React + Redux Toolkit (or Context API)
+- Visualization: any JS plotting library
+
+## Testing Stack (Actual)
+- Frontend: Vitest + Testing Library
+- Backend: Pytest
+
 ### Backend
 | Purpose | Technology |
 | --- | --- |
@@ -89,8 +121,8 @@ MyDuka provides:
 | Tests | Vitest + Testing Library |
 
 ### Database
-- Default local runtime currently uses SQLite (`backend/myduka.db`)
-- Can be switched to PostgreSQL using environment config
+- Default runtime uses PostgreSQL (recommended; Neon works well)
+- SQLite is optional for quick local testing (set `DATABASE_DRIVER=sqlite`)
 
 ## 8. Repository Structure (Current)
 ```text
@@ -131,6 +163,9 @@ cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+cp .env.example .env
+# Update DATABASE_URL inside .env with your Postgres connection string
+alembic upgrade head
 uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
@@ -170,6 +205,9 @@ Important backend settings are in `backend/app/core/config.py` and `.env`:
 - `FRONTEND_BASE_URL`
 - `CORS_ORIGINS_RAW`
 - `SEED_DEMO_USERS`
+Notes:
+- For Postgres, set `DATABASE_URL` to a valid connection string (Neon provides one).
+- For SQLite, use `DATABASE_URL=sqlite:///./myduka.db` and `DATABASE_DRIVER=sqlite`.
 
 ## 12. API Summary
 ### Auth (`/api/auth`)
@@ -216,6 +254,53 @@ Important backend settings are in `backend/app/core/config.py` and `.env`:
 - `GET /clerk/dashboard`
 - `GET /admin/dashboard`
 - `GET /merchant/dashboard`
+
+### Suppliers (`/api/suppliers`)
+- `POST /`
+- `GET /`
+- `PUT /{supplier_id}`
+- `DELETE /{supplier_id}`
+
+### Purchase Orders (`/api/purchase-orders`)
+- `POST /`
+- `GET /`
+- `GET /{purchase_order_id}`
+- `POST /{purchase_order_id}/status`
+
+### Stock Transfers (`/api/stock-transfers`)
+- `POST /`
+- `GET /`
+- `POST /{transfer_id}/status`
+
+### Returns (`/api/returns`)
+- `POST /`
+- `GET /`
+- `POST /{return_id}/status`
+
+### Sales (`/api/sales`)
+- `POST /`
+- `GET /`
+
+### Expenses (`/api/expenses`)
+- `POST /`
+- `GET /`
+
+### Analytics (`/api/analytics`)
+- `GET /store-performance`
+- `GET /store-performance/export`
+- `GET /top-products`
+- `GET /top-products/export`
+- `GET /slow-movers`
+- `GET /payment-trend`
+- `GET /sales-trend`
+- `GET /financial-summary`
+- `GET /expenses-by-category`
+
+### Notifications (`/api/notifications`)
+- `GET /`
+- `GET /unread-count`
+- `PATCH /{notification_id}/read`
+- `PATCH /read-all`
 
 ### Stores (`/api/stores`)
 - `POST /`

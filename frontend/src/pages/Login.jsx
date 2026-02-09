@@ -53,9 +53,9 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-[#F0FDF4] relative overflow-hidden">
       {/* Glowing orbs */}
-      <div className="absolute top-16 left-16 w-72 h-72 bg-white/70 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute bottom-16 right-20 w-96 h-96 bg-white/70 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-white/50 rounded-full blur-3xl animate-pulse delay-500"></div>
+      <div className="absolute top-16 left-16 w-72 h-72 bg-[#FFFFFF]/70 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-16 right-20 w-96 h-96 bg-[#FFFFFF]/70 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-[#FFFFFF]/50 rounded-full blur-3xl animate-pulse delay-500"></div>
       
       <div className="mx-auto flex min-h-screen max-w-7xl items-center gap-16 px-12 py-12 relative z-10">
         {/* LEFT: COPY + IMAGE */}
@@ -71,19 +71,19 @@ export default function Login() {
 
           {/* Floating notification cards */}
           <div className="mt-10 space-y-4">
-            <div className="bg-white backdrop-blur-md border border-[#D1FAE5] rounded-2xl p-5 shadow-2xl animate-float">
+            <div className="bg-[#FFFFFF] backdrop-blur-md border border-[#D1FAE5] rounded-2xl p-5 shadow-2xl animate-float">
               <div className="flex items-center gap-4">
                 <div className="w-4 h-4 bg-[#34D399] rounded-full animate-pulse"></div>
                 <span className="text-[#064E3B] text-sm">Real-time inventory tracking</span>
               </div>
             </div>
-            <div className="bg-white backdrop-blur-md border border-[#D1FAE5] rounded-2xl p-5 shadow-2xl animate-float delay-200 ml-8">
+            <div className="bg-[#FFFFFF] backdrop-blur-md border border-[#D1FAE5] rounded-2xl p-5 shadow-2xl animate-float delay-200 ml-8">
               <div className="flex items-center gap-4">
                 <div className="w-4 h-4 bg-[#34D399] rounded-full animate-pulse"></div>
                 <span className="text-[#064E3B] text-sm">Automated payment processing</span>
               </div>
             </div>
-            <div className="bg-white backdrop-blur-md border border-[#D1FAE5] rounded-2xl p-5 shadow-2xl animate-float delay-500">
+            <div className="bg-[#FFFFFF] backdrop-blur-md border border-[#D1FAE5] rounded-2xl p-5 shadow-2xl animate-float delay-500">
               <div className="flex items-center gap-4">
                 <div className="w-4 h-4 bg-[#34D399] rounded-full animate-pulse"></div>
                 <span className="text-[#064E3B] text-sm">Advanced analytics & reports</span>
@@ -94,7 +94,7 @@ export default function Login() {
 
         {/* RIGHT: FORM */}
         <div className="w-full md:w-1/2 pl-6">
-          <div className="mx-auto w-full max-w-md bg-white backdrop-blur-xl border border-[#D1FAE5] rounded-3xl p-9 shadow-2xl">
+          <div className="mx-auto w-full max-w-md bg-[#FFFFFF] backdrop-blur-xl border border-[#D1FAE5] rounded-3xl p-9 shadow-2xl">
             <div className="flex items-center justify-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F0FDF4] text-[#064E3B] font-bold text-xl shadow-lg shadow-black/30">
                 M
@@ -117,7 +117,7 @@ export default function Login() {
                       type="text"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      className="w-full rounded-xl border border-[#D1FAE5] bg-white px-4 py-2.5 text-sm text-[#064E3B] placeholder-[#6B7280] focus:border-[#34D399] focus:outline-none focus:ring-2 focus:ring-[#34D399]/30"
+                      className="w-full rounded-xl border border-[#D1FAE5] bg-[#FFFFFF] px-4 py-2.5 text-sm text-[#064E3B] placeholder-[#6B7280] focus:border-[#34D399] focus:outline-none focus:ring-2 focus:ring-[#34D399]/30"
                     />
                   </div>
                   <div>
@@ -126,7 +126,7 @@ export default function Login() {
                       type="text"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      className="w-full rounded-xl border border-[#D1FAE5] bg-white px-4 py-2.5 text-sm text-[#064E3B] placeholder-[#6B7280] focus:border-[#34D399] focus:outline-none focus:ring-2 focus:ring-[#34D399]/30"
+                      className="w-full rounded-xl border border-[#D1FAE5] bg-[#FFFFFF] px-4 py-2.5 text-sm text-[#064E3B] placeholder-[#6B7280] focus:border-[#34D399] focus:outline-none focus:ring-2 focus:ring-[#34D399]/30"
                     />
                   </div>
                 </div>
@@ -151,7 +151,7 @@ export default function Login() {
                       placeholder="you@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full rounded-xl border border-[#D1FAE5] bg-white py-2.5 pl-12 pr-4 text-sm text-[#064E3B] placeholder-[#6B7280] transition-all focus:border-[#34D399] focus:outline-none focus:ring-2 focus:ring-[#34D399]/30"
+                      className="w-full rounded-xl border border-[#D1FAE5] bg-[#FFFFFF] py-2.5 pl-12 pr-4 text-sm text-[#064E3B] placeholder-[#6B7280] transition-all focus:border-[#34D399] focus:outline-none focus:ring-2 focus:ring-[#34D399]/30"
                     />
                   </div>
                 </div>
@@ -172,7 +172,7 @@ export default function Login() {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-12 pr-12 py-2.5 bg-white backdrop-blur-md border border-[#D1FAE5] rounded-xl text-sm text-[#064E3B] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#34D399]/30 focus:border-[#34D399] transition-all"
+                    className="w-full pl-12 pr-12 py-2.5 bg-[#FFFFFF] backdrop-blur-md border border-[#D1FAE5] rounded-xl text-sm text-[#064E3B] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#34D399]/30 focus:border-[#34D399] transition-all"
                   />
                   <button
                     type="button"
@@ -194,7 +194,7 @@ export default function Login() {
                   <label className="flex items-center gap-2 text-[#6B7280]">
                     <input
                       type="checkbox"
-                      className="h-4 w-4 rounded border-[#D1FAE5] bg-white text-[#34D399] focus:ring-[#34D399]/30"
+                      className="h-4 w-4 rounded border-[#D1FAE5] bg-[#FFFFFF] text-[#34D399] focus:ring-[#34D399]/30"
                     />
                     Remember me
                   </label>
@@ -218,7 +218,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full rounded-xl bg-[#34D399] py-2.5 text-sm font-semibold text-[#064E3B] shadow-lg shadow-[#34D399]/20 hover:shadow-[#34D399]/30 hover:scale-[1.02] transition-all duration-200"
+                className="w-full rounded-xl bg-[#15803D] py-2.5 text-sm font-semibold text-white shadow-lg shadow-[#15803D]/20 hover:shadow-[#15803D]/30 hover:scale-[1.02] transition-all duration-200"
               >
                 {isSubmitting ? "Working..." : isInviteFlow ? "Create Admin Account" : "Log In"}
               </button>
@@ -231,13 +231,13 @@ export default function Login() {
             </p>
             
             <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-              <span className="rounded-full bg-white backdrop-blur-md border border-[#D1FAE5] px-3 py-1.5 text-[11px] text-[#6B7280]">
+              <span className="rounded-full bg-[#FFFFFF] backdrop-blur-md border border-[#D1FAE5] px-3 py-1.5 text-[11px] text-[#6B7280]">
                 Merchant
               </span>
-              <span className="rounded-full bg-white backdrop-blur-md border border-[#D1FAE5] px-3 py-1.5 text-[11px] text-[#6B7280]">
+              <span className="rounded-full bg-[#FFFFFF] backdrop-blur-md border border-[#D1FAE5] px-3 py-1.5 text-[11px] text-[#6B7280]">
                 Admin
               </span>
-              <span className="rounded-full bg-white backdrop-blur-md border border-[#D1FAE5] px-3 py-1.5 text-[11px] text-[#6B7280]">
+              <span className="rounded-full bg-[#FFFFFF] backdrop-blur-md border border-[#D1FAE5] px-3 py-1.5 text-[11px] text-[#6B7280]">
                 Clerk
               </span>
             </div>

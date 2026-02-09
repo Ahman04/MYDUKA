@@ -5,6 +5,9 @@ from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.schemas.inventory import StoreListResponse
+from app.schemas.product import ProductListResponse
+
 
 class PaymentStatus(str, Enum):
     PAID = "paid"
@@ -154,6 +157,14 @@ class ClerkProductItem(BaseModel):
 class ClerkDashboardResponse(BaseModel):
     stats: ClerkDashboardStats
     products: List[ClerkProductItem]
+
+
+class ClerkOverviewResponse(BaseModel):
+    stats: ClerkDashboardStats
+    inventory: List[ClerkProductItem]
+    products: List[ProductListResponse]
+    stores: List[StoreListResponse]
+    supply_requests: List[SupplyRequestResponse]
 
 
 class MerchantDashboardStats(BaseModel):
