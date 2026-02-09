@@ -7,7 +7,7 @@ from uuid import uuid4
 
 import bcrypt
 from fastapi import HTTPException, status
-from jose import JWTError, jwt
+from jose import JWTError, ExpiredSignatureError, jwt
 
 from .config import settings
 
@@ -91,6 +91,12 @@ def verify_token(token: str, expected_type: Optional[str] = "access") -> dict:
             )
 
         return payload
+    except ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invite token has expired",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

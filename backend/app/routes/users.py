@@ -5,6 +5,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.dependencies import check_permission, enforce_store_scope, get_current_user
 from app.core.security import create_invite_token, hash_password, verify_password
@@ -88,11 +89,15 @@ async def create_admin_invite(
             "store_id": payload.store_id,
         }
     )
-    invite_link = build_admin_invite_link(token)
-    send_admin_invite_email(payload.email, invite_link)
+    invite_link = build_admin_invite_link(token, settings.invite_token_expire_hours)
+    send_admin_invite_email(payload.email, invite_link, settings.invite_token_expire_hours)
 
     logger.info("Admin invite created actor_id=%s email=%s", current_user.id, payload.email)
-    return AdminInviteResponse(invite_token=token, invite_link=invite_link, expires_in_hours=48)
+    return AdminInviteResponse(
+        invite_token=token,
+        invite_link=invite_link,
+        expires_in_hours=settings.invite_token_expire_hours,
+    )
 
 
 @router.get("/", response_model=List[UserListResponse])

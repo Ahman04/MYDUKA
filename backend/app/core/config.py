@@ -29,15 +29,16 @@ class Settings(BaseSettings):
     smtp_port: int = 587
     email_from: str = "noreply@myduka.com"
     email_password: Optional[str] = None
+    sendgrid_api_key: Optional[str] = None
 
     # Frontend integration
-    frontend_base_url: str = "http://localhost:5173"
+    frontend_base_url: str = "http://localhost:3001"
 
     # Pagination
     items_per_page: int = 10
     low_stock_default_threshold: int = 20
     seed_demo_users: bool = True
-    cors_origins_raw: str = "http://localhost:3000,http://localhost:5173"
+    cors_origins_raw: str = "http://localhost:3000,http://localhost:3001,http://localhost:5173"
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
 
