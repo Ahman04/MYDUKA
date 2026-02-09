@@ -17,7 +17,7 @@ class Store(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    merchant = relationship("User", backref="stores")
+    merchant = relationship("User", backref="stores", foreign_keys=[merchant_id])
     products = relationship("Product", back_populates="store", cascade="all, delete-orphan")
     inventory_items = relationship("Inventory", back_populates="store", cascade="all, delete-orphan")
     supply_requests = relationship("SupplyRequest", back_populates="store", cascade="all, delete-orphan")

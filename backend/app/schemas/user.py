@@ -5,7 +5,7 @@
 # User login schema
 # User response schema
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 from typing import Optional
 from datetime import datetime
 
@@ -30,6 +30,8 @@ class UserLogin(BaseModel):
 
 # Response Schemas
 class UserResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     email: str
     full_name: Optional[str]
@@ -39,9 +41,6 @@ class UserResponse(BaseModel):
     store_id: Optional[int] = None
     created_at: datetime
     updated_at: datetime
-# Config
-    class Config:
-        from_attributes = True  # For SQLAlchemy models
 
 # Token Response Schema
 class TokenResponse(BaseModel):
