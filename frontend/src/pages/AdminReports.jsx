@@ -9,8 +9,6 @@ import {
   BarChart,
   CartesianGrid,
   Legend,
-  Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -110,7 +108,7 @@ export default function AdminReports() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <section className="rounded-xl border border-[#D1FAE5] bg-white p-6 shadow-sm">
-          <h2 className="text-base font-semibold text-[#064E3B]">Clerk Performance (Line)</h2>
+          <h2 className="text-base font-semibold text-[#064E3B]">Clerk Performance (Bar)</h2>
           <p className="mt-1 text-sm text-[#6B7280]">
             Entries recorded, stock recorded, and spoilt items by clerk.
           </p>
@@ -121,34 +119,16 @@ export default function AdminReports() {
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={clerkChartData}>
+                <BarChart data={clerkChartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#D1FAE5" />
                   <XAxis dataKey="name" tick={{ fontSize: 12, fill: "#064E3B" }} />
                   <YAxis tick={{ fontSize: 12, fill: "#064E3B" }} />
                   <Tooltip />
                   <Legend />
-                  <Line
-                    type="monotone"
-                    dataKey="recorded"
-                    name="Entries"
-                    stroke="hsl(222,60%,28%)"
-                    strokeWidth={2}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="stock"
-                    name="Stock Recorded"
-                    stroke="hsl(35,90%,55%)"
-                    strokeWidth={2}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="spoilt"
-                    name="Spoilt"
-                    stroke="#DC2626"
-                    strokeWidth={2}
-                  />
-                </LineChart>
+                  <Bar dataKey="recorded" name="Entries" fill="hsl(222,60%,28%)" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="stock" name="Stock Recorded" fill="hsl(35,90%,55%)" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="spoilt" name="Spoilt" fill="#DC2626" radius={[6, 6, 0, 0]} />
+                </BarChart>
               </ResponsiveContainer>
             )}
           </div>
